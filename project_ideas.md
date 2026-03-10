@@ -1,17 +1,62 @@
 # Research Mini-Projects
 
 The research mini-project is worth **16%** of the final grade and is done in
-groups of **3**. The project should involve: (1) implementing a concurrent
-algorithm or data structure in OCaml 5, (2) verifying its correctness using
-property-based testing tools (QCheck-Lin, QCheck-STM, or dscheck), and (3) a
-performance evaluation with a written analysis.
+groups of **3**. The project should involve implementing a concurrent algorithm
+or data structure that is **not discussed in class** but is related to the course
+objectives. The implementation language is flexible — it need not be OCaml 5.
 
-Each project is described using the following framework:
+### Use of LLMs
+
+You are expected to use LLMs (e.g., GitHub Copilot, ChatGPT) as part of your
+workflow. We strongly recommend signing up for [GitHub Copilot for
+Education](https://docs.github.com/en/copilot/managing-copilot/managing-copilot-as-an-individual-subscriber/managing-your-copilot-subscription/getting-free-access-to-copilot-as-a-student-teacher-or-maintainer),
+which is free for students.
+
+**However:** while an LLM may generate code, **you are responsible for every
+line it produces.** You must review and understand all LLM-generated code before
+submitting it. During the presentation or Q&A, an answer of *"the LLM generated
+it, I don't know what it does"* will receive the lowest marks possible.
+
+### Deliverables
+
+Every project must produce three deliverables:
+
+1. **Implementation** — working code for a concurrency problem not covered in
+   lectures, with tests and/or evaluation demonstrating correctness and
+   performance.
+2. **Written report** — 5–10 pages, LaTeX (template will be shared). The report
+   should cover: goals of the project, tasks undertaken, evaluation, and
+   conclusions. The report **must** list the contributions of each group member
+   in terms of percentages.
+3. **Presentation** — 10-minute presentation + Q&A. Only one group member needs
+   to present.
+
+### Grading Rubric (out of 16 marks)
+
+| Component | Marks | What we look for |
+|---|---|---|
+| Challenge of the problem undertaken | 3 | Ambition, novelty, relevance to course topics |
+| Progress made towards the challenge | 5 | Working implementation, depth of evaluation, evidence of effort |
+| Written report | 5 | Clarity, technical depth, proper evaluation, contribution breakdown |
+| Presentation | 3 | Clear explanation, good use of time, ability to answer questions |
+
+### Important Dates
+
+Deadlines for topic approval, report submission, and presentations will be
+announced soon.
+
+---
+
+## Project Ideas
+
+Below are suggested project ideas. You are free to propose your own topic
+(subject to instructor approval). The ideas below use OCaml 5 as the
+implementation language, but you may adapt them to another language or propose
+an entirely different project. Each idea is described using:
 
 - **Background** — motivation and connection to course topics
 - **Tasks** — concrete implementation, testing, and evaluation steps
 - **Research question** — the central question your project should answer
-- **Deliverables** — what to submit
 - **References** — starting points
 
 ---
@@ -45,12 +90,6 @@ state of the art in fair, scalable mutex design.
 Does the FIFO ordering enforced by CLH/MCS reduce tail latency under sustained
 high contention compared to the backoff lock, despite higher per-operation
 overhead?
-
-### Deliverables
-
-- OCaml 5 source code (buildable with `dune`) with correctness tests
-- Benchmark plots comparing all six locks across thread counts and contention levels
-- A 4–6 page report covering algorithm description, correctness argument, benchmark analysis, and conclusions
 
 ### References
 
@@ -86,13 +125,6 @@ implementation, formal linearizability testing, and benchmarking.
 
 At what workload mix and thread count does the complexity of the lock-free
 implementation pay off over fine-grained locking?
-
-### Deliverables
-
-- OCaml 5 source code with all three variants and QCheck-Lin test harnesses
-- Benchmark plots for all three workload mixes across thread counts
-- A 4–6 page report covering the algorithm designs, correctness argument,
-  benchmark analysis, and lessons learned
 
 ### References
 
@@ -130,13 +162,6 @@ Does the wait-freedom of seqlock readers translate to higher throughput in
 read-dominated workloads compared to the FIFO RW lock, and at what writer
 frequency does the retry overhead become a net negative?
 
-### Deliverables
-
-- OCaml 5 source code with the seqlock, TSAN test, and QCheck-STM harness
-- Benchmark plots sweeping reader/writer ratios and thread counts
-- A 4–6 page report covering correctness (memory model argument), TSAN results,
-  benchmark analysis, and conclusions
-
 ### References
 
 - Seqlock: <https://en.wikipedia.org/wiki/Seqlock>
@@ -172,13 +197,6 @@ operations on behalf of all waiting threads in a single critical section, amorti
 
 At what thread count does flat combining begin to outperform a simple mutex, and
 how does the benefit scale with contention?
-
-### Deliverables
-
-- OCaml 5 source code with the flat-combining wrapper and QCheck-Lin tests
-- Benchmark plots (throughput vs. threads, and batch size vs. threads)
-- A 4–6 page report covering the algorithm design, correctness argument,
-  benchmark analysis, and practical trade-offs
 
 ### References
 
@@ -216,13 +234,6 @@ Does MCAS provide enough expressive power to meaningfully simplify the
 implementation of atomic snapshot, and what is the performance cost of the
 software MCAS layer?
 
-### Deliverables
-
-- OCaml 5 source code with MCAS and the MCAS-based snapshot, plus test harnesses
-- Benchmark plots comparing MCAS-snapshot vs. double-collect snapshot
-- A 4–6 page report covering the MCAS algorithm, its use in snapshot,
-  correctness argument, and performance analysis
-
 ### References
 
 - T. Harris, K. Fraser, I. Pratt, "A Practical Multi-Word Compare-and-Swap Operation," *DISC*, 2002; also <https://arxiv.org/abs/2008.02527>
@@ -259,14 +270,6 @@ epoch-based memory reclamation.
 Can domain-based epoch tracking in OCaml 5 provide a practical grace period
 mechanism for user-space RCU, and how does RCU read throughput compare with
 reader-writer locks and seqlocks at high reader concurrency?
-
-### Deliverables
-
-- OCaml 5 source code with the RCU implementation, an RCU-based data structure,
-  and QCheck-STM tests
-- Benchmark plots for read throughput across varying reader/writer ratios
-- A 4–6 page report covering the RCU design, grace period mechanism, correctness
-  argument, benchmark analysis, and any limitations encountered
 
 ### References
 
