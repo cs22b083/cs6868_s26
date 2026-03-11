@@ -22,7 +22,18 @@
     This test should PASS if your basic operations work correctly.
 *)
 let test_sequential () =
-  failwith "Not implemented"
+  let snapshot = Snapshot.create 4 0 in
+  Snapshot.update snapshot 0 10;
+  Snapshot.update snapshot 1 20;
+  Snapshot.update snapshot 2 30;
+  Snapshot.update snapshot 3 40;
+  let original = Snapshot.scan snapshot in
+  let expected = [| 10; 20; 30; 40 |] in
+  if original <> expected then
+    failwith
+      (Printf.sprintf
+         "test_sequential failed: expected [|10;20;30;40|], original [|%d;%d;%d;%d|]"
+         original.(0) original.(1) original.(2) original.(3))
 
 (** Test 2: Concurrent updates, single scanner
 
@@ -43,7 +54,51 @@ let test_sequential () =
     This test should PASS if you use Atomic.t correctly (no data races).
 *)
 let test_concurrent_updates () =
-  failwith "Not implemented"
+  let snapshot = Snapshot.create 4 0 in
+  let d0 =
+    Domain.spawn (fun () ->
+        for i = 0 to 100 do
+          Snapshot.update snapshot 0 i
+        done)
+  in
+  let d1 =
+    Domain.spawn (fun () ->
+        for i = 0 to 100 do
+          Snapshot.update snapshot 1 (1000 + i)
+        done)
+  in
+  let d2 =
+    Domain.spawn (fun () ->
+        for i = 0 to 100 do
+          Snapshot.update snapshot 2 (2000 + i)
+        done)
+  in
+  let d3 =
+    Domain.spawn (fun () ->
+        for i = 0 to 100 do
+          Snapshot.update snapshot 3 (3000 + i)
+        done)
+  in
+
+  (* Join every thread *)
+  Domain.join d0;
+  Domain.join d1;
+  Domain.join d2;
+  Domain.join d3;
+
+  (* Check final values *)
+  let final = Snapshot.scan snapshot in
+  if final.(0) <> 100 then
+    failwith "Register 0 out of range";
+
+  if final.(1) <> 1100 then
+    failwith "Register 1 out of range";
+
+  if final.(2) <> 2100 then
+    failwith "Register 2 out of range";
+
+  if final.(3) <> 3100 then
+    failwith "Register 3 out of range"
 
 (** Test 3: Multiple concurrent scanners - THE CRITICAL TEST FOR DOUBLE-COLLECT
 
@@ -71,9 +126,73 @@ let test_concurrent_updates () =
     the double-collect algorithm correctly. A naive scan will fail here.
 *)
 let test_concurrent_scans () =
-  failwith "Not implemented"
+  let snapshot = Snapshot.create 3 0 in
+  let check_consistent arr =
+    if Array.length arr <> 3 then
+      failwith "test_concurrent_scans failed: unexpected scan length";
+    let r0 = arr.(0) in
+    let r1 = arr.(1) / 10 in
+    let r2 = arr.(2) / 100 in 
+    if not (r0 >= r1 && r1 >= r2) then
+      failwith
+        (Printf.sprintf
+           "test_concurrent_scans failed: inconsistent scan [|%d;%d;%d|]"
+           arr.(0) arr.(1) arr.(2))
+  in
+  let updater =
+    Domain.spawn (fun () ->
+        for i = 0 to 100000 do
+          Snapshot.update snapshot 0 i;
+          Snapshot.update snapshot 1 (i * 10);
+          Snapshot.update snapshot 2 (i * 100)
+        done)
+  in
+  
+ let s0 =
+  Domain.spawn (fun () ->
+      for _ = 1 to 50 do
+        let arr = Snapshot.scan snapshot in
+        check_consistent arr;
+        (* Printf.printf "s0 L [|%d; %d; %d|]\n%!"
+          arr.(0) arr.(1) arr.(2) *)
+      done)
+  in
 
-(** Test 4: High contention stress test
+  let s1 =
+    Domain.spawn (fun () ->
+      for _ = 1 to 50 do
+        let arr = Snapshot.scan snapshot in
+        check_consistent arr;
+        (* Printf.printf "s1 : [|%d; %d; %d|]\n%!"
+          arr.(0) arr.(1) arr.(2) *)
+      done)
+  in
+
+  let s2 =
+    Domain.spawn (fun () ->
+        for _ = 1 to 50 do
+          let arr = Snapshot.scan snapshot in
+          check_consistent arr;
+          (* Printf.printf "s2 : [|%d; %d; %d|]\n%!"
+          arr.(0) arr.(1) arr.(2) *)
+        done)
+  in
+
+  let s3 =
+    Domain.spawn (fun () ->
+        for _ = 1 to 50 do
+          let arr = Snapshot.scan snapshot in
+          check_consistent arr
+        done)
+  in
+
+  Domain.join updater;
+  Domain.join s0;
+  Domain.join s1;
+  Domain.join s2;
+  Domain.join s3
+
+(** Test 4: right contention stress test
 
     WHAT TO IMPLEMENT:
     - Your implementation must handle many threads reading/writing simultaneously
@@ -86,15 +205,34 @@ let test_concurrent_scans () =
     - Test should complete without hanging or crashing
 
     This test should PASS if your atomic operations are correct and your
-    double-collect handles high contention gracefully.
+    double-collect handles right contention gracefully.
 *)
-let test_high_contention () =
-  failwith "Not implemented"
+(* 0, 2, 4, 6 threads update -> 0, 2 registers *)
+let test_right_contention () =
+  let snapshot = Snapshot.create 4 0 in
+  let domains =
+    Array.init 8 (fun tid ->
+        Domain.spawn (fun () ->
+            if tid mod 2 = 0 then
+              for i = 1 to 1000 do
+                let idx = (tid + i) mod 4 in
+                Snapshot.update snapshot idx (tid * 100000 + i)
+              done
+            else
+              for _ = 1 to 1000 do
+                ignore (Snapshot.scan snapshot)
+              done))
+  in
+  Array.iter Domain.join domains;
+  let final = Snapshot.scan snapshot in
+  if Array.length final <> 4 then
+    failwith "test_right_contention failed: unexpected scan length"
+
 
 (** Main test runner *)
 let () =
   test_sequential ();
   test_concurrent_updates ();
   test_concurrent_scans ();
-  test_high_contention ();
+ test_right_contention ();
   Printf.printf "All manual tests passed!\n%!"

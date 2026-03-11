@@ -30,4 +30,29 @@
     state that existed during the scan operation.
 *)
 
-failwith "Implement QCheck-Lin test following Lecture 3 examples"
+module SnapshotSig = struct
+  type t = int Snapshot.t
+
+  let n = 4
+  let init () = Snapshot.create n 0
+  let cleanup _ = ()
+
+  open Lin
+
+  let int_small = nat_small
+  (*
+     Bound the generated index at call-site to avoid exceptions. *)
+  let update_bounded snapshot idx value =
+    Snapshot.update snapshot (idx mod n) value
+
+  let api =
+    [ val_ "update" update_bounded (t @-> int_small @-> int_small @-> returning unit);
+      val_ "scan" Snapshot.scan (t @-> returning (array int)); ]
+end
+
+module Snapshot_domain = Lin_domain.Make(SnapshotSig)
+
+let () =
+  QCheck_base_runner.run_tests_main [
+    Snapshot_domain.lin_test ~count:1000 ~name:"Atomic Snapshot (double-collect)";
+  ]

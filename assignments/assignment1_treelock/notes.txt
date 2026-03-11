@@ -1,0 +1,13 @@
+Tree lock approach 
+- Binary tree 
+- each leaf corresponding to a thread
+- Each internal node is a Peterson lock protecting access between left and right subtrees
+
+
+Acquire lock from leaf to root
+
+
+Peterson lock : 
+    1. create : creates the lock    
+    2. lock : lock 
+    3. unlock 

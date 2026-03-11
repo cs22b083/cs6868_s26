@@ -1,3 +1,0 @@
-(library
- (name concurrent_queues)
- (modules bounded_queue lockfree_queue))

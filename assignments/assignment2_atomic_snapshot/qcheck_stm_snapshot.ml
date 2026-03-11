@@ -58,17 +58,26 @@ let arb_cmd _state =
     ])
 
 (* ============================================================================
-   TODO: Implement next_state
-
+   DONE: Implement next_state
+  
    Update the model state according to the command.
    This defines the "correct" sequential behavior.
 
    Hints:
    - For Update(idx, value): update the model array at index idx
    - For Scan: the model state doesn't change (Scan is read-only)
+   
+   
    ============================================================================ *)
 let next_state cmd state =
-  failwith "TODO: Implement next_state"
+  match cmd with
+  | Update (idx, value) ->
+      let st' = Array.copy state in
+      st'.(idx) <- value;
+      st'
+  | Scan ->
+      state
+
 
 (** Precondition - all commands are always valid for snapshot *)
 let precond _cmd _state = true
@@ -99,8 +108,11 @@ let run cmd snapshot =
 
    Return true if result is acceptable, false otherwise.
    ============================================================================ *)
-let postcond cmd state result =
-  failwith "TODO: Implement postcond"
+let postcond cmd (state : model_state) result =
+  match (cmd, result) with
+  | Update _, Res ((Unit, _), ()) -> true
+  | Scan, Res ((Array Int, _), arr) -> arr = state
+  | _ -> false
 
 (** QCheck-STM specification *)
 module Spec = struct
