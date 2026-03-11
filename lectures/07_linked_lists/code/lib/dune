@@ -1,0 +1,36 @@
+(library
+ (name seq_list)
+ (modules seq_list))
+
+(library
+ (name coarse_list)
+ (modules coarse_list))
+
+(library
+ (name fine_list)
+ (modules fine_list))
+
+(library
+ (name optimistic_list)
+ (modules optimistic_list))
+
+(library
+ (name lazy_list)
+ (modules lazy_list))
+
+(library
+ (name atomic_markable_ref)
+ (modules atomic_markable_ref))
+
+(library
+ (name lockfree_list)
+ (libraries atomic_markable_ref)
+ (modules lockfree_list))
+
+(library
+ (name lazy_list_racefree)
+ (modules lazy_list_racefree))
+
+(library
+ (name optimistic_list_racefree)
+ (modules optimistic_list_racefree))
