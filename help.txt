@@ -1,0 +1,6 @@
+To keep your fork updated with course main, use this flow on main:
+
+git fetch upstream
+git checkout main
+git merge upstream/main
+git push origin main
