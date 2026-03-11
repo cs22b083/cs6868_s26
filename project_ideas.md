@@ -1,5 +1,5 @@
 # Research Mini-Projects
-
+okay
 The research mini-project is worth **16%** of the final grade and is done in
 groups of **3**. The project should involve implementing a concurrent algorithm
 or data structure that is **not discussed in class** but is related to the course
