@@ -1,3 +1,15 @@
 To keep your fork updated with course main, use this flow on main:
 
 git pull upstream main
+
+
+
+origin   → your fork
+upstream → original repo
+
+So once you run:
+	git remote add upstream https://github.com/original/repo
+
+it stays there forever for that repo.
+
+You do NOT need to add it again.
