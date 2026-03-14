@@ -12,8 +12,18 @@
 type 'a node = {
   item : 'a option;         (* None for sentinel nodes *)
   key : int;                (* hash code for the item, or min_int/max_int for sentinels *)
-  mutable next : 'a node;   (* next node in the list, tail points to itself *)
-  mutable marked : bool;    (* true if logically deleted *)
+  mutable next : 'a node;   (* next node in the list, tail points to itself *) (* WORD READ / WRITE ARE ATOMIC*)
+  (*
+  Hardware guarantee.
+  So during:  
+  pred.next <- curr.next 
+  there is no intermediate state like:
+  half old pointer + half new pointer
+  contains will observe either  
+  pred.next = curr or pred.next = curr.next
+  but never a corrupted pointer.
+  *)
+  mutable marked : bool;    (* true if logically deleted *) (* ALSO BOOL READ WRITES ARE ATOMIC*)
   lock : Mutex.t;           (* lock for this individual node *)
 }
 
@@ -116,7 +126,7 @@ let remove list item =
     1. Marked nodes stay marked (monotonic property)
     2. We only report true if key matches AND not marked
     3. Even if a node is being concurrently removed, we'll see either
-       the old state (unmarked, report true) or new state (marked, report false),
+       the- old state (unmarked, report true) or new state (marked, report false),
        both of which are valid linearization points.
 *)
 let contains list item =
