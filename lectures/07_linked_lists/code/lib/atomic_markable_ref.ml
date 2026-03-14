@@ -24,6 +24,7 @@ let get amr marked = (* note that it is atomic *)
   mr.reference
 
 let compare_and_set amr ~expected_ref ~new_ref ~expected_mark ~new_mark =
+  (*  you can change the order of labeled arguments in OCaml, as long as you keep the labels. *)
   let current = Atomic.get amr in
   (* Check if current state matches expected using physical equality for references *)
   if current.reference == expected_ref && current.marked = expected_mark then
