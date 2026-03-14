@@ -71,7 +71,10 @@ let locate head key =
   in
   retry head
 
-(** Add an element to the list *)
+(** Add an element to the list 
+    - check if pred not deleted and pred.next = curr 
+    - check if curr is deleted ??
+*)
 let add list item =
   let key = Hashtbl.hash item in
   let rec attempt () =
@@ -79,7 +82,7 @@ let add list item =
     if curr.key = key then false
     else
       let node = { item = Some item; key; next = AMR.create curr false } in
-      if AMR.compare_and_set pred.next
+      if AMR.compare_and_set pred.next (*check if pred not deleted and pred.next = curr *)
            ~expected_ref:curr ~new_ref:node
            ~expected_mark:false ~new_mark:false
       then true

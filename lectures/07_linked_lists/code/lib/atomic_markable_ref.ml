@@ -18,7 +18,7 @@ let get_mark amr =
   let mr = Atomic.get amr in
   mr.marked
 
-let get amr marked =
+let get amr marked = (* note that it is atomic *)
   let mr = Atomic.get amr in
   marked := mr.marked;
   mr.reference

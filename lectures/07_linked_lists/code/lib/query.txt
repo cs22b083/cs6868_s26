@@ -1,0 +1,39 @@
+in the given optimistic synchronisation for add and remove can i check if the
+ curr.key = key and accordingly do validations instead of doing validation and 
+ then checking the key and taking action s
+
+
+
+--> 
+No, you cannot safely check curr.key = key before validation in the optimistic approach. Here's why:
+
+Current flow (correct):
+
+Unlocked traverse → find pred and curr (might be stale)
+Lock both nodes
+Validate that pred.next == curr and they're still in the list
+Only after validation passes, trust curr.key to make decisions
+Why you can't check curr.key before validation:
+
+The validation is essential because:
+
+During the unlocked traverse, the list might have changed
+pred and curr might no longer be adjacent (another node might have been inserted between them)
+curr itself might have been deleted and a new node inserted where it was
+If you trust curr.key before validation:
+
+You might read a stale/inconsistent value
+Another thread could have modified the list structure while you were traversing
+You could make incorrect decisions about whether to add/remove
+The validation ensures:
+
+pred.next == curr is still true (they're still adjacent)
+Both nodes are reachable from head
+curr hasn't been logically removed
+Only after validation passes can you safely read and trust curr.key.
+
+Could you optimize differently?
+
+You could check curr.key == key before validation if your goal is early exit detection, but you'd still need to validate:
+
+This is essentially what you already have. The current structure is the correct and safe pattern for optimistic synchronization.
