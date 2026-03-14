@@ -9,3 +9,11 @@
 (library
  (name lockfree_queue)
  (modules lockfree_queue))
+
+(library
+ (name lockfree_stack)
+ (modules lockfree_stack))
+
+(library
+ (name lockfree_stack_builtin_list)
+ (modules lockfree_stack_builtin_list))
