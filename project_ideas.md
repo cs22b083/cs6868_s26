@@ -31,6 +31,9 @@ Every project must produce three deliverables:
 3. **Presentation** — 10-minute presentation + Q&A. Only one group member needs
    to present.
 
+Code and report must be submitted as a single GitHub repository. The report
+must be written in LaTeX, Markdown, or another open, machine-readable format.
+
 ### Grading Rubric (out of 16 marks)
 
 | Component | Marks | What we look for |
@@ -42,8 +45,15 @@ Every project must produce three deliverables:
 
 ### Important Dates
 
-Deadlines for topic approval, report submission, and presentations will be
-announced soon.
+| Task | Date |
+|---|---|
+| Project topic approval | 30/03/2026 |
+| Report & code submission | 27/04/2026 |
+| Presentation | Week of 28/04/2026 |
+
+Fill in your group members and chosen project topic in the
+[sign-up sheet](https://docs.google.com/spreadsheets/d/1kINa3ipNcyxAqh1wXC9_65xeZg25QFDirSUEqUU3IyA/edit?gid=0#gid=0)
+by the topic approval deadline.
 
 ---
 
@@ -75,7 +85,8 @@ announced soon.
 24. [Elimination-Based Concurrent Data Structures Beyond Stacks](#project-24-elimination-based-concurrent-data-structures-beyond-stacks)
 
 Below are suggested project ideas. You are free to propose your own topic
-(subject to instructor approval). The ideas below use OCaml 5 as the
+(subject to instructor approval). If you are presenting a new project topic,
+make a PR to this file. The ideas below use OCaml 5 as the
 implementation language, but you may adapt them to another language or propose
 an entirely different project. Each idea is described using:
 
