@@ -21,3 +21,7 @@
 (executable
  (name qsort_bench)
  (libraries golike_multicore unix))
+
+(executable
+ (name chan_test)
+ (libraries golike_multicore unix))
