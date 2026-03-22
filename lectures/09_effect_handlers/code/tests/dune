@@ -1,0 +1,7 @@
+(executable
+ (name sched_test)
+ (libraries sched_basic))
+
+(executable
+ (name domains_vs_fibers)
+ (libraries sched_basic unix))
