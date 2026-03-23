@@ -1,0 +1,16 @@
+(executables
+ (names
+   select_one_ready_test
+   select_blocks_test
+   select_send_test
+   select_second_ready_test
+   select_multi_round_test
+   select_ivar_test
+   select_stress_test
+   select_same_chan_recv_test
+   select_same_chan_send_test
+   select_buffer_test
+   fanin_test
+   sieve_test
+   fib_test)
+ (libraries golike_multicore_select unix))
