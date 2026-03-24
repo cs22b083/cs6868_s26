@@ -10,6 +10,8 @@
 (* or                                                                           *)
 (*   ocamlopt -o value_repr_demo value_representation_with_obj.ml && ./value_repr_demo *)
 (*                                                                            *)
+(* Tested with OCaml 5.4.0.                                                   *)
+(*                                                                            *)
 (* WARNING: Obj is intentionally unsafe and breaks type abstraction.           *)
 (* Use this only for learning, debugging, and runtime-internals exploration.  *)
 (*                                                                            *)
@@ -57,6 +59,7 @@
 let rec dump_obj ?(indent = 0) (v : Obj.t) : unit =
   let pad = String.make indent ' ' in
   if Obj.is_int v then (
+    (* Obj.magic is an unchecked cast -- no runtime conversion, just reinterprets the word *)
     let n : int = Obj.magic v in
     Printf.printf "%s- immediate word (Obj.is_int = true), decoded int view = %d\n" pad n)
   else (
@@ -131,7 +134,7 @@ let show_expected_encoded_word_for_int name n =
 
 (*
    ---------------------------------------------------------------------------
-  Part 3. Sample values to inspect
+   Part 3. Sample values to inspect
    ---------------------------------------------------------------------------
 *)
 
@@ -168,8 +171,8 @@ let ref_to_a_non_empty_list = ref non_empty_list
    Immediate values:
    - CAS sees the word itself (e.g. ints, bool, []).
 
-  Boxed heap values:
-  - CAS compares physical equality (==, pointer identity), not structural equality (=).
+   Boxed heap values:
+   - CAS compares physical equality (==, pointer identity), not structural equality (=).
 
    So two separately allocated lists [1] and [1] are structurally equal (=)
    but not physically identical (==). CAS on Atomic.t with expected = first list
@@ -233,6 +236,8 @@ let print_summary_table () =
   summary_row "None" none_val;
   summary_row "Some 42" some_val;
   summary_row "Red" red;
+  summary_row "Yellow" yellow;
+  summary_row "Green" green;
   summary_row "Payload 99" payload_val;
   summary_row "[]" empty_list;
   summary_row "[1]" non_empty_list;
@@ -240,7 +245,10 @@ let print_summary_table () =
   summary_row "(7,true)" tuple_val;
   summary_row "\"ocaml\"" string_val;
   summary_row "ref 10" ref_to_an_int;
-  summary_row "ref [1]" ref_to_a_non_empty_list
+  summary_row "ref [1]" ref_to_a_non_empty_list;
+  Printf.printf "\nNote: ref and Atomic.t share the same runtime representation\n";
+  Printf.printf "(single-field boxed block, tag 0). Atomic.t exists to provide\n";
+  Printf.printf "memory-ordering guarantees, not a different representation.\n"
 
 let print_memory_model_notes () =
   section "Memory model notes (header and fields)";
