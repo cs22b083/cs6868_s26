@@ -9,3 +9,7 @@
 (executable
  (name chan_test)
  (libraries golike_unicore))
+
+(executable
+ (name sieve_test)
+ (libraries golike_unicore))
