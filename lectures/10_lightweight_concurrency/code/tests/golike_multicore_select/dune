@@ -12,5 +12,11 @@
    select_buffer_test
    fanin_test
    sieve_test
-   fib_test)
- (libraries golike_multicore_select unix))
+   fib_test
+   blocking_io_demo
+   select_timeout_test
+   io_readable_test
+   io_direct_test
+   accept_test
+   echo_server)
+ (libraries golike_multicore_select unix threads))

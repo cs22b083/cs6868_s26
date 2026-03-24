@@ -1,2 +1,3 @@
 (library
- (name golike_multicore_select))
+ (name golike_multicore_select)
+ (libraries unix threads))
