@@ -21,8 +21,8 @@ val recv : 'a t -> 'a
 (** [recv ch] receives a value from [ch]. Blocks the current fiber if
     the channel is empty (or unbuffered with no waiting sender). *)
 
-val recvEvt : 'a t -> 'a Select.event
-(** [recvEvt ch] is an event that, when synchronised on, receives from [ch]. *)
+val recv_evt : 'a t -> 'a Select.event
+(** [recv_evt ch] is an event that, when synchronised on, receives from [ch]. *)
 
-val sendEvt : 'a t -> 'a -> unit Select.event
-(** [sendEvt ch v] is an event that, when synchronised on, sends [v] on [ch]. *)
+val send_evt : 'a t -> 'a -> unit Select.event
+(** [send_evt ch v] is an event that, when synchronised on, sends [v] on [ch]. *)

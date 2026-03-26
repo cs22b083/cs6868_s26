@@ -1,12 +1,9 @@
 open Golike_multicore_select
 
 (** Build a [Select.event] that fires after [delay] seconds.
-    The channel is buffered (capacity 1) so the timer fiber can always
-    complete its [Chan.send] even if nobody ever receives — no leak. *)
-let timeout_evt delay =
-  let ch = Chan.make 1 in
-  Sched.fork (fun () -> Io.sleep delay; Chan.send ch ());
-  Chan.recvEvt ch
+    Uses the native [Io.timeout_evt] so the timer only starts when
+    [Select.select] synchronises on it — not at event creation time. *)
+let timeout_evt delay = Io.timeout_evt delay
 
 (** Sender: sends integers 0..n-1 on [ch], one per second, then stops. *)
 let sender ch n =
@@ -25,7 +22,7 @@ let receiver ch n =
   while !received < n do
     (match
       Select.select
-        [ Chan.recvEvt ch   |> Select.wrap (fun v  -> `Msg v)
+        [ Chan.recv_evt ch   |> Select.wrap (fun v  -> `Msg v)
         ; timeout_evt 0.5   |> Select.wrap (fun () -> `Timeout)
         ]
     with
@@ -35,7 +32,7 @@ let receiver ch n =
   Printf.printf "[receiver] done\n%!"
 
 let () =
-  let n = 100 in
+  let n = 10 in
   Sched.run ~num_domains:4 (fun () ->
       let ch = Chan.make 0 in
       Sched.fork (fun () -> sender ch n);

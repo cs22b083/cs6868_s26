@@ -1,14 +1,14 @@
 (** CML-style composable events and select.
 
     Synchronisation primitives (channels, IVars, …) expose events via
-    functions such as {!Chan.recvEvt} and {!Ivar.readEvt}.  {!select}
+    functions such as {!Chan.recv_evt} and {!Ivar.read_evt}.  {!select}
     blocks until one of several events occurs.
 
     {[
       Select.select [
-        Chan.recvEvt ch1 |> Select.wrap (fun v -> `Ch1 v);
-        Chan.recvEvt ch2 |> Select.wrap (fun v -> `Ch2 v);
-        IVar.readEvt iv  |> Select.wrap (fun v -> `Iv v);
+        Chan.recv_evt ch1 |> Select.wrap (fun v -> `Ch1 v);
+        Chan.recv_evt ch2 |> Select.wrap (fun v -> `Ch2 v);
+        IVar.read_evt iv  |> Select.wrap (fun v -> `Iv v);
       ]
     ]} *)
 

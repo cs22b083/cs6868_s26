@@ -16,5 +16,5 @@ val fill : 'a t -> 'a -> unit
 val read : 'a t -> 'a
 (** [read ivar] returns the value if filled, or blocks until it is. *)
 
-val readEvt : 'a t -> 'a Select.event
-(** [readEvt ivar] is an event that, when synchronised on, reads from [ivar]. *)
+val read_evt : 'a t -> 'a Select.event
+(** [read_evt ivar] is an event that, when synchronised on, reads from [ivar]. *)

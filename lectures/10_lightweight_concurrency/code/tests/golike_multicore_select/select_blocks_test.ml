@@ -10,8 +10,8 @@ let () =
       Chan.send ch2 99
     );
     let v = Select.select [
-      Chan.recvEvt ch1 |> Select.wrap (fun v -> `Ch1 v);
-      Chan.recvEvt ch2 |> Select.wrap (fun v -> `Ch2 v);
+      Chan.recv_evt ch1 |> Select.wrap (fun v -> `Ch1 v);
+      Chan.recv_evt ch2 |> Select.wrap (fun v -> `Ch2 v);
     ] in
     (match v with
      | `Ch1 v -> Printf.printf "  ch1: %d\n" v

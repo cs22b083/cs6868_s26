@@ -7,7 +7,7 @@ open Golike_multicore_select
 let timeout_evt delay =
   let ch = Chan.make 1 in
   Sched.fork (fun () -> Io.sleep delay; Chan.send ch ());
-  Chan.recvEvt ch
+  Chan.recv_evt ch
 
 let () =
   let n = 20 in

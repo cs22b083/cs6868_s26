@@ -10,7 +10,7 @@ exception Cancelled
 
 let or_cancel cancel evt = Select.select [
   evt;
-  Ivar.readEvt cancel |> Select.wrap (fun () -> raise Cancelled);
+  Ivar.read_evt cancel |> Select.wrap (fun () -> raise Cancelled);
 ]
 
 let () =
@@ -25,7 +25,7 @@ let () =
     let fibonacci out_ch =
       try
         let rec loop x y =
-          or_cancel cancel (Chan.sendEvt out_ch x);
+          or_cancel cancel (Chan.send_evt out_ch x);
           loop y (x + y)
         in
         loop 0 1

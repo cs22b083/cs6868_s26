@@ -258,17 +258,20 @@ let wait_writable fd =
 
 (* ----- Public API ----- *)
 
+let register_timer delay trigger =
+  ensure_started ();
+  let deadline = Unix.gettimeofday () +. delay in
+  Mutex.lock st.mutex;
+  st.timers := (deadline, trigger) :: !(st.timers);
+  Condition.signal st.cond;
+  poke_wakeup ();
+  Mutex.unlock st.mutex
+
 let sleep delay =
   if delay <= 0. then ()
   else begin
-    ensure_started ();
     let trigger = Trigger.create () in
-    let deadline = Unix.gettimeofday () +. delay in
-    Mutex.lock st.mutex;
-    st.timers := (deadline, trigger) :: !(st.timers);
-    Condition.signal st.cond;
-    poke_wakeup ();
-    Mutex.unlock st.mutex;
+    register_timer delay trigger;
     Trigger.await trigger
   end
 
@@ -324,3 +327,27 @@ let connect fd addr =
       (match Unix.getsockopt_error fd with
        | None -> ()
        | Some err -> raise (Unix.Unix_error (err, "connect", "")))
+
+(** A private mutex for timeout events.  Timeout events have no external
+    sync object, but {!Select.event} requires a mutex for lock ordering.
+    A single shared mutex suffices because timeout's [try_complete] and
+    [offer] do no real work under it. *)
+let timeout_mutex = Mutex.create ()
+
+let timeout_evt delay : unit Select.event = Select.Evt {
+  try_complete = (fun () -> if delay <= 0. then Some () else None);
+  offer = (fun slot trigger ->
+    (* Write the slot {i before} signaling so that [Select.find_winner]
+       sees it.  We create a proxy trigger whose [on_signal] callback
+       writes the slot and then signals the real (shared) trigger.
+       If signaling fails (another event won the race) we clear the
+       slot to avoid a stale write. *)
+    let proxy = Trigger.create () in
+    ignore (Trigger.on_signal proxy (fun () ->
+      slot := Some ();
+      if not (Trigger.signal trigger) then
+        slot := None) : bool);
+    register_timer delay proxy);
+  mutex = timeout_mutex;
+  wrap = Fun.id;
+}

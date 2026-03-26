@@ -19,6 +19,9 @@
    io_direct_test
    accept_test
    echo_server
+   echo_server_test
    select_recv_timeout_test
-   timeout_loop_test)
+   timeout_loop_test
+   async_io_demo
+   async_io_sleep_demo)
  (libraries golike_multicore_select unix threads))

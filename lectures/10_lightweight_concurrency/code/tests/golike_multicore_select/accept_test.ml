@@ -49,7 +49,7 @@ let test_accept_timeout () =
           Chan.send result_ch `Timeout);
       let result =
         Select.select
-          [ Chan.recvEvt result_ch ]
+          [ Chan.recv_evt result_ch ]
       in
       (match result with
        | `Timeout -> ()

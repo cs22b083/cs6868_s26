@@ -26,7 +26,7 @@ let read ivar =
       Trigger.await t;
       Option.get !slot
 
-let readEvt ivar = Select.Evt {
+let read_evt ivar = Select.Evt {
   try_complete = (fun () ->
     match ivar.state with
     | Filled v -> Some v

@@ -26,8 +26,8 @@ let () =
         Queue.push (Chan.recv in_ch) q
       else
         Select.select [
-          Chan.recvEvt in_ch |> Select.wrap (fun v -> Queue.push v q);
-          Chan.sendEvt out_ch (Queue.peek q)
+          Chan.recv_evt in_ch |> Select.wrap (fun v -> Queue.push v q);
+          Chan.send_evt out_ch (Queue.peek q)
             |> Select.wrap (fun () -> ignore (Queue.pop q); ignore (Atomic.fetch_and_add forwarded 1 : int));
         ]
     done;

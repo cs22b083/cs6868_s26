@@ -8,7 +8,7 @@
       only when [buf] is full.
     - When [select] is used, both [receivers] and [senders] may
       contain live entries on the {i same} channel (e.g. a select
-      offering both [recvEvt ch] and [sendEvt ch v]).  Stale entries
+      offering both [recv_evt ch] and [send_evt ch v]).  Stale entries
       from lost select races are harmlessly skipped by
       {!find_live_receiver} / {!find_live_sender}.
     - Each trigger is signaled at most once.  Stale entries may linger
@@ -115,13 +115,13 @@ let enqueue_send ch v done_slot trigger =
 
 (* --- CML-style events --- *)
 
-let recvEvt ch = Select.Evt {
+let recv_evt ch = Select.Evt {
   try_complete = (fun () -> try_complete_recv ch);
   offer = (fun slot trigger -> enqueue_recv ch slot trigger);
   wrap = Fun.id;
 }
 
-let sendEvt ch v = Select.Evt {
+let send_evt ch v = Select.Evt {
   try_complete = (fun () -> if try_complete_send ch v then Some () else None);
   offer = (fun done_slot trigger -> enqueue_send ch v done_slot trigger);
   wrap = Fun.id;
