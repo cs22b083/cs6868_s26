@@ -12,8 +12,8 @@ let () =
       Atomic.set received v
     );
     Select.select [
-      Chan.sendEvt ch1 1;
-      Chan.sendEvt ch2 2;
+      Chan.send_evt ch1 1;
+      Chan.send_evt ch2 2;
     ];
     while Atomic.get received = 0 do Sched.yield () done;
     Printf.printf "  Receiver got: %d\n" (Atomic.get received)

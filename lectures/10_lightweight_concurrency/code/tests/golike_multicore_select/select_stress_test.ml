@@ -16,8 +16,8 @@ let () =
     for _ = 1 to n_selectors do
       Sched.fork (fun () ->
         let v = Select.select [
-          Chan.recvEvt ch1;
-          Chan.recvEvt ch2;
+          Chan.recv_evt ch1;
+          Chan.recv_evt ch2;
         ] in
         ignore (Atomic.fetch_and_add received v : int)
       )
@@ -25,8 +25,8 @@ let () =
     for _ = 1 to 2 * n_senders - n_selectors do
       Sched.fork (fun () ->
         let v = Select.select [
-          Chan.recvEvt ch1;
-          Chan.recvEvt ch2;
+          Chan.recv_evt ch1;
+          Chan.recv_evt ch2;
         ] in
         ignore (Atomic.fetch_and_add received v : int)
       )

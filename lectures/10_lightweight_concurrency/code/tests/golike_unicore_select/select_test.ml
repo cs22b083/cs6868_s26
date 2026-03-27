@@ -8,8 +8,8 @@ let () =
     let ch2 = Chan.make 1 in
     Chan.send ch1 42;
     let v = Select.select [
-      Chan.recvEvt ch1;
-      Chan.recvEvt ch2;
+      Chan.recv_evt ch1;
+      Chan.recv_evt ch2;
     ] in
     Printf.printf "  Got: %d\n" v
   )
@@ -24,8 +24,8 @@ let () =
       Chan.send ch2 99
     );
     let v = Select.select [
-      Chan.recvEvt ch1 |> Select.wrap (fun v -> `Ch1 v);
-      Chan.recvEvt ch2 |> Select.wrap (fun v -> `Ch2 v);
+      Chan.recv_evt ch1 |> Select.wrap (fun v -> `Ch1 v);
+      Chan.recv_evt ch2 |> Select.wrap (fun v -> `Ch2 v);
     ] in
     (match v with
      | `Ch1 v -> Printf.printf "  ch1: %d\n" v
@@ -43,8 +43,8 @@ let () =
       Printf.printf "  Receiver got from ch2: %d\n" v
     );
     Select.select [
-      Chan.sendEvt ch1 1 |> Select.wrap (fun () -> Printf.printf "  Sent 1 on ch1\n");
-      Chan.sendEvt ch2 2 |> Select.wrap (fun () -> Printf.printf "  Sent 2 on ch2\n");
+      Chan.send_evt ch1 1 |> Select.wrap (fun () -> Printf.printf "  Sent 1 on ch1\n");
+      Chan.send_evt ch2 2 |> Select.wrap (fun () -> Printf.printf "  Sent 2 on ch2\n");
     ]
   )
 
@@ -66,8 +66,8 @@ let () =
     );
     for _ = 1 to 6 do
       let v = Select.select [
-        Chan.recvEvt ch1;
-        Chan.recvEvt ch2;
+        Chan.recv_evt ch1;
+        Chan.recv_evt ch2;
       ] in
       Printf.printf "  Got: %d\n" v
     done
@@ -87,8 +87,8 @@ let () =
       Printf.printf "  out_ch receiver got: %d\n" v
     );
     Select.select [
-      Chan.recvEvt in_ch |> Select.wrap (fun v -> Printf.printf "  Received %d from in_ch\n" v);
-      Chan.sendEvt out_ch 42 |> Select.wrap (fun () -> Printf.printf "  Sent 42 on out_ch\n");
+      Chan.recv_evt in_ch |> Select.wrap (fun v -> Printf.printf "  Received %d from in_ch\n" v);
+      Chan.send_evt out_ch 42 |> Select.wrap (fun () -> Printf.printf "  Sent 42 on out_ch\n");
     ]
   )
 
@@ -100,8 +100,8 @@ let () =
     let ch2 = Chan.make 1 in
     Chan.send ch2 77;
     let v = Select.select [
-      Chan.recvEvt ch1 |> Select.wrap (fun v -> `Ch1 v);
-      Chan.recvEvt ch2 |> Select.wrap (fun v -> `Ch2 v);
+      Chan.recv_evt ch1 |> Select.wrap (fun v -> `Ch1 v);
+      Chan.recv_evt ch2 |> Select.wrap (fun v -> `Ch2 v);
     ] in
     (match v with
      | `Ch1 v -> Printf.printf "  ch1: %d\n" v
@@ -120,15 +120,15 @@ let () =
     );
     for _ = 1 to 3 do
       let v = Select.select [
-        Chan.recvEvt ch;
+        Chan.recv_evt ch;
       ] in
       Printf.printf "  Got: %d\n" v
     done
   )
 
-(* Test 8: IVar readEvt in select *)
+(* Test 8: IVar read_evt in select *)
 let () =
-  Printf.printf "\n=== Select: IVar readEvt ===\n";
+  Printf.printf "\n=== Select: IVar read_evt ===\n";
   Sched.run (fun () ->
     let iv = Ivar.create () in
     let ch = Chan.make 0 in
@@ -136,8 +136,8 @@ let () =
       Ivar.fill iv 42
     );
     let v = Select.select [
-      Chan.recvEvt ch |> Select.wrap (fun v -> `Ch v);
-      Ivar.readEvt iv |> Select.wrap (fun v -> `Iv v);
+      Chan.recv_evt ch |> Select.wrap (fun v -> `Ch v);
+      Ivar.read_evt iv |> Select.wrap (fun v -> `Iv v);
     ] in
     (match v with
      | `Ch v -> Printf.printf "  ch: %d\n" v
@@ -151,7 +151,7 @@ let () =
     let iv = Ivar.create () in
     Ivar.fill iv 99;
     let v = Select.select [
-      Ivar.readEvt iv;
+      Ivar.read_evt iv;
     ] in
     Printf.printf "  Got: %d\n" v
   )
@@ -161,13 +161,13 @@ let () =
   Printf.printf "\n=== Select: same-channel send+recv ===\n";
   Sched.run (fun () ->
     let ch = Chan.make 0 in
-    (* Fork a sender — it will match our recvEvt offer *)
+    (* Fork a sender — it will match our recv_evt offer *)
     Sched.fork (fun () ->
       Chan.send ch 7
     );
     let v = Select.select [
-      Chan.recvEvt ch |> Select.wrap (fun v -> `Recv v);
-      Chan.sendEvt ch 42 |> Select.wrap (fun () -> `Sent);
+      Chan.recv_evt ch |> Select.wrap (fun v -> `Recv v);
+      Chan.send_evt ch 42 |> Select.wrap (fun () -> `Sent);
     ] in
     (match v with
      | `Recv v -> Printf.printf "  Received %d\n" v
@@ -179,14 +179,14 @@ let () =
   Printf.printf "\n=== Select: same-channel send wins ===\n";
   Sched.run (fun () ->
     let ch = Chan.make 0 in
-    (* Fork a receiver — it will match our sendEvt offer *)
+    (* Fork a receiver — it will match our send_evt offer *)
     Sched.fork (fun () ->
       let v = Chan.recv ch in
       Printf.printf "  Receiver got: %d\n" v
     );
     let v = Select.select [
-      Chan.recvEvt ch |> Select.wrap (fun v -> `Recv v);
-      Chan.sendEvt ch 42 |> Select.wrap (fun () -> `Sent);
+      Chan.recv_evt ch |> Select.wrap (fun v -> `Recv v);
+      Chan.send_evt ch 42 |> Select.wrap (fun () -> `Sent);
     ] in
     (match v with
      | `Recv v -> Printf.printf "  Received %d\n" v
@@ -219,8 +219,8 @@ let () =
         Queue.push (Chan.recv in_ch) q
       end else begin
         Select.select [
-          Chan.recvEvt in_ch |> Select.wrap (fun v -> Queue.push v q);
-          Chan.sendEvt out_ch (Queue.peek q)
+          Chan.recv_evt in_ch |> Select.wrap (fun v -> Queue.push v q);
+          Chan.send_evt out_ch (Queue.peek q)
             |> Select.wrap (fun () -> ignore (Queue.pop q); incr forwarded);
         ]
       end

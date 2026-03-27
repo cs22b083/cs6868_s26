@@ -1,16 +1,16 @@
 (** CML-style composable events and select (multicore-safe).
 
     Sync objects (channels, IVars, …) expose events via functions such
-    as {!Chan.recvEvt} and {!Ivar.readEvt}.  {!select} acquires
+    as {!Chan.recv_evt} and {!Ivar.read_evt}.  {!select} acquires
     all involved locks in mutex-address order, scans for an immediately
     ready case, and if none is found, offers a single shared {!Trigger.t}
     to all cases before blocking.
 
     {[
       Select.select [
-        Chan.recvEvt ch1 |> Select.wrap (fun v -> `Ch1 v);
-        Chan.recvEvt ch2 |> Select.wrap (fun v -> `Ch2 v);
-        Ivar.readEvt iv  |> Select.wrap (fun v -> `Iv v);
+        Chan.recv_evt ch1 |> Select.wrap (fun v -> `Ch1 v);
+        Chan.recv_evt ch2 |> Select.wrap (fun v -> `Ch2 v);
+        Ivar.read_evt iv  |> Select.wrap (fun v -> `Iv v);
       ]
     ]} *)
 

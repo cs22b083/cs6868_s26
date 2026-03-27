@@ -19,6 +19,10 @@ type msg_flag = Unix.msg_flag
 val sleep : float -> unit
 (** [sleep d] suspends the current fiber for [d] seconds. *)
 
+val register_timer : float -> Trigger.t -> unit
+(** [register_timer delay trigger] registers a timer that signals [trigger]
+    after [delay] seconds.  Does not block the caller. *)
+
 val read : file_descr -> bytes -> int -> int -> int
 (** [read fd buf pos len] waits until [fd] is readable, then reads. *)
 
@@ -38,3 +42,9 @@ val accept : file_descr -> file_descr * sockaddr
 val connect : file_descr -> sockaddr -> unit
 (** [connect fd addr] initiates a connection on a non-blocking socket and
     waits until the handshake completes. *)
+
+val timeout_evt : float -> unit Select.event
+(** [timeout_evt delay] is a latent event that fires [delay] seconds after
+    {!Select.select} begins synchronising on it.  The timer does {b not}
+    start when the event value is created — only when [select] enters
+    its offer phase.  This makes it safe to build once and reuse. *)

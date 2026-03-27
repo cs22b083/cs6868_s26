@@ -6,14 +6,14 @@ open Golike_multicore_select
 let timeout_evt delay =
   let ch = Chan.make 1 in
   Sched.fork (fun () -> Io.sleep delay; Chan.send ch ());
-  Chan.recvEvt ch
+  Chan.recv_evt ch
 
 let test_timeout_wins () =
   Sched.run ~num_domains:4 (fun () ->
       let ch = Chan.make 0 in
       let winner =
         Select.select
-          [ Chan.recvEvt ch |> Select.wrap (fun v -> `Msg v)
+          [ Chan.recv_evt ch |> Select.wrap (fun v -> `Msg v)
           ; timeout_evt 0.02 |> Select.wrap (fun () -> `Timeout)
           ]
       in
@@ -29,7 +29,7 @@ let test_message_wins () =
           Chan.send ch 42);
       let winner =
         Select.select
-          [ Chan.recvEvt ch |> Select.wrap (fun v -> `Msg v)
+          [ Chan.recv_evt ch |> Select.wrap (fun v -> `Msg v)
           ; timeout_evt 0.20 |> Select.wrap (fun () -> `Timeout)
           ]
       in

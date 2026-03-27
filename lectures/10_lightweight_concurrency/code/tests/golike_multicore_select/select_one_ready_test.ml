@@ -8,8 +8,8 @@ let () =
     let ch2 = Chan.make 1 in
     Chan.send ch1 42;
     let v = Select.select [
-      Chan.recvEvt ch1;
-      Chan.recvEvt ch2;
+      Chan.recv_evt ch1;
+      Chan.recv_evt ch2;
     ] in
     Printf.printf "  Got: %d\n" v;
     assert (v = 42)

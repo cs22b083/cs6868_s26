@@ -8,7 +8,7 @@ exception Cancelled
     if the [cancel] IVar is filled first. *)
 let or_cancel cancel evt = Select.select [
   evt;
-  Ivar.readEvt cancel |> Select.wrap (fun () -> raise Cancelled);
+  Ivar.read_evt cancel |> Select.wrap (fun () -> raise Cancelled);
 ]
 
 let () =
@@ -26,7 +26,7 @@ let () =
       try
         let i = ref 2 in
         while true do
-          or_cancel cancel (Chan.sendEvt out_ch !i);
+          or_cancel cancel (Chan.send_evt out_ch !i);
           incr i
         done
       with Cancelled -> ()
@@ -35,9 +35,9 @@ let () =
     let filter in_ch out_ch prime =
       try
         while true do
-          let n = or_cancel cancel (Chan.recvEvt in_ch) in
+          let n = or_cancel cancel (Chan.recv_evt in_ch) in
           if n mod prime <> 0 then
-            or_cancel cancel (Chan.sendEvt out_ch n)
+            or_cancel cancel (Chan.send_evt out_ch n)
         done
       with Cancelled -> ()
     in

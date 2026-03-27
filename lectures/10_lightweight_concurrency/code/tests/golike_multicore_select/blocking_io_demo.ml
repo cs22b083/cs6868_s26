@@ -1,4 +1,4 @@
-open Golike_multicore_select
+open Golike_multicore_selectr
 
 (** Demonstrates why blocking IO inside a fiber is a problem.
 

@@ -13,7 +13,7 @@ let () =
     let total = ref 0 in
     for _ = 1 to 5 do
       let v = Select.select [
-        Chan.recvEvt ch;
+        Chan.recv_evt ch;
       ] in
       total := !total + v
     done;

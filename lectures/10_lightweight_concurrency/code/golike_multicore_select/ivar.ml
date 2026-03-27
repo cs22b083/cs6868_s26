@@ -48,7 +48,7 @@ let read t =
            Trigger.await tr;
            Option.get !slot)
 
-let readEvt t : 'a Select.event = Select.Evt {
+let read_evt t : 'a Select.event = Select.Evt {
   try_complete = (fun () ->
     match Atomic.get t.state with
     | Filled v -> Some v

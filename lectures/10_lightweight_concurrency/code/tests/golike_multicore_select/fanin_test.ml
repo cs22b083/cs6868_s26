@@ -22,8 +22,8 @@ let () =
     );
     for _ = 1 to 6 do
       let v = Select.select [
-        Chan.recvEvt ch1;
-        Chan.recvEvt ch2;
+        Chan.recv_evt ch1;
+        Chan.recv_evt ch2;
       ] in
       ignore (Atomic.fetch_and_add total v : int)
     done;
