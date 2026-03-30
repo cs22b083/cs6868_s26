@@ -41,8 +41,4 @@
  (name state))
 
 (executable
- (name nondeterminism)
- (libraries multicont))
-
-(executable
  (name generator))
