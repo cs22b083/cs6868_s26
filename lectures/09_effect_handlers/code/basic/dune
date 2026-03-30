@@ -11,6 +11,9 @@
  (name test4))
 
 (executable
+ (name test4_2))
+
+(executable
  (name test5)
  (flags (:standard -w -38)))
 
