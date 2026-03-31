@@ -231,7 +231,7 @@ make test-stm-conc  # QCheck-STM concurrent
 
 ## Submission
 
-Submit the following files:
+Submit a single `.zip` file containing the following files at the top level (not inside a folder):
 
 1. `BatchQueue.ml` - Your implementation
 2. `test_manual.ml` - Manual tests
