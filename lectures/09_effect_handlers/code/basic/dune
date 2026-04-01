@@ -11,6 +11,9 @@
  (name test4))
 
 (executable
+ (name test4_2))
+
+(executable
  (name test5)
  (flags (:standard -w -38)))
 
@@ -36,10 +39,6 @@
 
 (executable
  (name state))
-
-(executable
- (name nondeterminism)
- (libraries multicont))
 
 (executable
  (name generator))

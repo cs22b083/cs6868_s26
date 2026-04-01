@@ -392,15 +392,13 @@ Memory
 
 ## Submission
 
-Submit the following files:
+Submit a single `.zip` file containing the following files at the top level (not inside a folder):
 
 1. `Snapshot.ml` - Your implementation
 2. `test_manual.ml` - Manual tests
 3. `qcheck_lin_snapshot.ml` - QCheck-Lin test
 4. `qcheck_stm_snapshot.ml` - Completed QCheck-STM test
 5. `TSAN_REPORT.md` - TSAN analysis
-
-**Submission format:** [TBD - via course management system]
 
 ---
 
