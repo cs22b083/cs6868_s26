@@ -72,7 +72,27 @@ let arb_cmd _state =
    - For Size and Capacity: queries don't change state.
    ============================================================================ *)
 let next_state cmd state =
-  let _ = (cmd, state) in failwith "TODO: Implement next_state"
+  match cmd with 
+  | Try_enq items ->
+    let k = Array.length items in
+    if List.length state + k <= queue_capacity then
+      state @ Array.to_list items (* convert array to list and append *)
+    else
+      state
+  | Try_deq n ->
+    if List.length state >= n then
+      let rec pop k xs =
+        if k = 0 then xs
+        else
+          match xs with
+          | [] -> [] (* not possible btw*)
+          | _ :: tl -> pop (k - 1) tl
+      in
+      pop n state
+    else
+      state
+  | Size -> state
+  | Capacity -> state
 
 let precond _cmd _state = true
 
@@ -108,7 +128,37 @@ let run cmd sut =
      | ...
    ============================================================================ *)
 let postcond cmd state result =
-  let _ = (cmd, state, result) in failwith "TODO: Implement postcond"
+  let take (n : int) (xs : int list) : int list =
+    let rec aux k acc ys =
+      if k = 0 then List.rev acc
+      else
+        match ys with
+        | [] -> List.rev acc
+        | h :: tl -> aux (k - 1) (h :: acc) tl
+    in
+    aux n [] xs
+  in
+  match cmd, result with
+  | Try_enq items, Res ((Bool, _), ok) ->
+    let can_fit = List.length state + Array.length items <= queue_capacity in
+    ok = can_fit (* just check if can be enqueued or not *)
+
+  | Try_deq n, Res ((Option (Array Int), _), got) ->
+  if List.length state >= n then
+    match got with
+    | Some arr -> Array.to_list arr = take n state (* check the returned array *)
+    | None -> false
+  else
+    got = None
+
+  | Size, Res ((Int, _), actual_size) ->
+    actual_size = List.length state
+
+  | Capacity, Res ((Int, _), actual_cap) ->
+    actual_cap = queue_capacity
+
+  | _ -> false
+
 
 module Spec = struct
   type sut = int BQ.t
