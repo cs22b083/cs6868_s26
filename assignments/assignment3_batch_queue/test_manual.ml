@@ -69,6 +69,7 @@ let test_blocking_enq_deq () =
         Atomic.set deq_res r;
         Atomic.set deq_done true)
   in
+  Unix.sleepf 0.05; (* wait for dequeue *)
   assert_true (not (Atomic.get deq_done)) "deq should block on empty queue";
   BatchQueue.enq q [|42|];
   Domain.join d_deq;
@@ -82,6 +83,7 @@ let test_blocking_enq_deq () =
         BatchQueue.enq q [|3|];
         Atomic.set enq_done true)
   in
+  Unix.sleepf 0.05; (* wait for enqueue *)
   assert_true (not (Atomic.get enq_done)) "enq should block on full queue";
   ignore (BatchQueue.deq q 1);
   Domain.join d_enq;
@@ -130,21 +132,21 @@ let test_dequeuer_head_of_line_blocking () =
         Atomic.set a_res (BatchQueue.deq q 5);
         Atomic.set a_done true)
   in
+  Unix.sleepf 0.05; (* let da reach first *)
   let db =
     Domain.spawn (fun () ->
         Atomic.set b_res (BatchQueue.deq q 2);
         Atomic.set b_done true)
   in
+  Unix.sleepf 0.05;
 
   BatchQueue.enq q [|1;2;3;4;5;6|];
-  Domain.join da;
-   (* I know that the deq(5) will complete. So joining the thread early so that it 
-   assertion after deq thread is notified *)
+  Unix.sleepf 0.05; (* wait for notification of deque and completion*)
   assert_true (Atomic.get a_done) "deq(5) should complete first";
   assert_true (not (Atomic.get b_done)) "deq(2) must wait behind head waiter";
 
   BatchQueue.enq q [|7|];
-  (* Domain.join da; *)
+  Domain.join da;
   Domain.join db;
 
   assert_array_eq [|1;2;3;4;5|] (Atomic.get a_res) "deq(5) result";
@@ -165,24 +167,28 @@ let test_enqueuer_head_of_line_blocking () =
         BatchQueue.enq q [|101;102;103|];
         Atomic.set a_done true)
   in
+  Unix.sleepf 0.05;
   (* 1 elements enqueue *)
   let db =
     Domain.spawn (fun () ->
         BatchQueue.enq q [|201|];
         Atomic.set b_done true)
     in
+  Unix.sleepf 0.05;
 
   ignore (BatchQueue.deq q 1);
+  Unix.sleepf 0.05;
   assert_true (not (Atomic.get a_done)) "enq(3) still needs more space";
   assert_true (not (Atomic.get b_done)) "enq(1) must not jump ahead";
 
   ignore (BatchQueue.deq q 2);
-  (* Waiting for notification and enqueue complete *)
-  Domain.join da;
+  Unix.sleepf 0.05;
+
   assert_true (Atomic.get a_done) "head enq(3) should proceed when 3 slots free";
   assert_true (not (Atomic.get b_done)) "enq(1) should still wait if no slot remains";
     (* dequeue to finish the enqueuer's task *)
   ignore (BatchQueue.deq q 1);
+  Domain.join da; 
   Domain.join db;
  (* ONCE check the final array *)
   let rest = BatchQueue.deq q 8 in
