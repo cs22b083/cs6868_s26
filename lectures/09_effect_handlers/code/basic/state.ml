@@ -81,3 +81,13 @@ let () =
    after second set: 100
    final state: 100
 *)
+
+
+let () =
+    let final_state, value  = ISFn.run 0 (fun () ->
+                            let x = ISFn.get () in
+                            ISFn.set (x + 1);
+                            ISFn.get ()) in
+   Printf.printf "***************************\n";
+   Printf.printf "final state: %d\n" final_state;
+   Printf.printf "value : %d\n" value
