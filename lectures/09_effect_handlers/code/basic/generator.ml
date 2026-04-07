@@ -35,7 +35,7 @@ let example_tree =
 
 (* ---------- Internal iterators (push-based) ---------- *)
 
-let rec iter t f = match t with
+let rec iter t f = match t with (* iter : 'a tree -> ('a -> unit) -> unit *)
   | Leaf -> ()
   | Node (l, x, r) ->
     iter l f;

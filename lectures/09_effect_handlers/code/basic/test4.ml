@@ -10,7 +10,8 @@ let comp () =
 
 let main () =
   try
-    comp ()
+    comp ();
+    print_string "reaches in try ";
   with effect E, k ->
     print_string "1 ";
     continue k "2 ";
