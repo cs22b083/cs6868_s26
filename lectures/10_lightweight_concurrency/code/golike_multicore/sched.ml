@@ -38,6 +38,7 @@ let run ?(num_domains = Domain.recommended_domain_count ()) main =
         Mutex.unlock mutex;
         None
       end else begin
+        (* Wait for a fiber to become available or for all fibers to complete *)
         Condition.wait cond mutex;
         wait ()
       end
