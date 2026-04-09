@@ -17,8 +17,8 @@ banner_credit: "Photo © Madras Inherited"
 | 06       | Monitors and Synchronization | 25/02, 26/02                             | 2.0             | Chap 8 AMP         |
 | 07       | Linked Lists                 | 02/03, 03/03, 09/03, 10/03, 11/03, 12/03, 16/03 | 6.5      | Chap 9 AMP         |
 | 08       | Queues and Stacks            | 16/03, 17/03, 18/03, 19/03, 24/03, 25/03, 26/03 | 6.0             | Chap 10 & 11 AMP   |
-| 09       | Effect Handlers              | 26/03 | 0.5 |  * [Effect Handlers in OCaml](https://ocaml.org/manual/5.4/effects.html) <br/> * Chap 10 CS[^2] |
-| 10       | Lightweight Concurrency      | | | Chap 10 CS |
+| 09       | Effect Handlers              | 26/03, 30/03, 01/04, 02/04, 06/04 | 5.5 |  * [Effect Handlers in OCaml](https://ocaml.org/manual/5.4/effects.html) <br/> * Chap 10 CS[^2] |
+| 10       | Lightweight Concurrency      | 07/04, 08/04 | 2.0 | Chap 10 CS |
 
 ## Quiz dates
 

@@ -1,4 +1,5 @@
 open Effect
+open Effect.Deep
 
 type _ Effect.t += Fork : (unit -> unit) -> unit Effect.t
 type _ Effect.t += Yield : unit Effect.t
@@ -8,7 +9,7 @@ let yield () = perform Yield
 
 let run ?(num_domains = Domain.recommended_domain_count ()) main =
   (* ---- shared work queue (producer-consumer monitor) ---- *)
-  let q : (unit, unit) Deep.continuation Queue.t = Queue.create () in
+  let q : (unit, unit) continuation Queue.t = Queue.create () in
   let mutex = Mutex.create () in
   let cond = Condition.create () in
 
@@ -71,12 +72,12 @@ let run ?(num_domains = Domain.recommended_domain_count ()) main =
         if Trigger.on_signal trigger (fun () -> enqueue k) then
           () (* callback registered; return to worker loop *)
         else
-          Deep.continue k () (* already signaled — resume immediately *)
+          continue k () (* already signaled — resume immediately *)
 
   and worker () =
     match dequeue () with
     | None -> ()
-    | Some k -> Deep.continue k (); worker ()
+    | Some k -> continue k (); worker ()
   in
 
   (* Spawn worker domains (num_domains - 1 extra; this domain also works) *)
