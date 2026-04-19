@@ -1,3 +1,7 @@
+(* Invariants:
+   Empty:    |receivers| >= 0
+   NotEmpty: capacity > 0, 1 <= |buf| <= capacity
+   Full:     |buf| = capacity, |senders| >= 1 *)
 type 'a state =
   | Empty of { receivers : ('a option ref * Trigger.t) Queue.t }
   | NotEmpty of { buf : 'a Queue.t }

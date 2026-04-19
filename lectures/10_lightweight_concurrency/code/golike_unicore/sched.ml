@@ -1,4 +1,5 @@
 open Effect
+open Effect.Deep
 
 type _ Effect.t += Fork : (unit -> unit) -> unit Effect.t
 type _ Effect.t += Yield : unit Effect.t
@@ -31,6 +32,6 @@ let run main =
         else
           (* Already signaled — resume immediately; impossible in uniprocessor
              mode *)
-          Effect.Deep.continue k ()
+          continue k ()
   in
   spawn main

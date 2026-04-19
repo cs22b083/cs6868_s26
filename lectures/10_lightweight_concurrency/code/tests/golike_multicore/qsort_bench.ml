@@ -18,7 +18,15 @@ let insertion_sort (arr : int array) lo hi =
     arr.(!j + 1) <- key
   done
 
+let median_of_three (arr : int array) lo hi =
+  let mid = lo + (hi - lo) / 2 in
+  if arr.(lo) > arr.(mid) then swap arr lo mid;
+  if arr.(lo) > arr.(hi) then swap arr lo hi;
+  if arr.(mid) > arr.(hi) then swap arr mid hi;
+  swap arr mid hi
+
 let partition (arr : int array) lo hi =
+  median_of_three arr lo hi;
   let pivot = arr.(hi) in
   let i = ref lo in
   for j = lo to hi - 1 do
@@ -39,7 +47,7 @@ let rec qsort_seq (arr : int array) lo hi =
   end
 
 let rec qsort_par cutoff (arr : int array) lo hi =
-  if hi - lo < cutoff then qsort_seq arr lo hi
+  if hi - lo + 1 < cutoff then qsort_seq arr lo hi
   else begin
     let p = partition arr lo hi in
     let promise = Promise.async (fun () -> qsort_par cutoff arr lo (p - 1)) in
@@ -97,7 +105,7 @@ let () =
   match mode with
   | "cutoff" ->
     Printf.printf "cutoff,time_s,speedup,num_tasks\n%!";
-    let cutoffs = [1000; 5000; 10000; 50000; 100000; 500000; 1000000; 5000000] in
+    let cutoffs = [100; 500; 1000; 5000; 10000; 50000; 100000; 500000; 1000000; 5000000] in
     List.iter (fun cutoff ->
       let best = ref infinity in
       for _ = 1 to iters do

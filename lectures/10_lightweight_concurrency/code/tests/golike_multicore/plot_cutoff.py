@@ -66,7 +66,9 @@ def plot_cutoff(info, rows, out):
     lines2, labels2 = ax2.get_legend_handles_labels()
     ax1.legend(lines1 + lines2, labels1 + labels2, loc='center right', fontsize=11)
 
+    ax1.set_xscale('log')
     ax1.set_xticks(cutoffs)
+    ax1.set_xticklabels([f'{c:,}' for c in cutoffs], rotation=35, ha='right')
     ax1.grid(axis='y', alpha=0.3)
     title = info.get('title', '?')
     d = info.get('max_domains', '?')

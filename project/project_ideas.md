@@ -1,62 +1,19 @@
-# Research Mini-Projects
-The research mini-project is worth **16%** of the final grade and is done in
-groups of **3**. The project should involve implementing a concurrent algorithm
-or data structure that is **not discussed in class** but is related to the course
-objectives. The implementation language is flexible — it need not be OCaml 5.
+# Project Ideas
 
-### Use of LLMs
+See [`README.md`](README.md) for deliverables, grading rubric, important
+dates, and rules around LLM use. This file lists the 27 suggested project
+topics. The ideas below use OCaml 5 as the implementation language, but you
+may adapt them to another language or propose an entirely different project
+(subject to instructor approval — open a PR against this file).
 
-You are expected to use LLMs (e.g., GitHub Copilot, ChatGPT) as part of your
-workflow. We strongly recommend signing up for [GitHub Copilot for
-Education](https://docs.github.com/en/copilot/managing-copilot/managing-copilot-as-an-individual-subscriber/managing-your-copilot-subscription/getting-free-access-to-copilot-as-a-student-teacher-or-maintainer),
-which is free for students.
+Each idea is described using:
 
-**However:** while an LLM may generate code, **you are responsible for every
-line it produces.** You must review and understand all LLM-generated code before
-submitting it. During the presentation or Q&A, an answer of *"the LLM generated
-it, I don't know what it does"* will receive the lowest marks possible.
+- **Background** — motivation and connection to course topics
+- **Tasks** — concrete implementation, testing, and evaluation steps
+- **Research question** — the central question your project should answer
+- **References** — starting points
 
-### Deliverables
-
-Every project must produce three deliverables:
-
-1. **Implementation** — working code for a concurrency problem not covered in
-   lectures, with tests and/or evaluation demonstrating correctness and
-   performance.
-2. **Written report** — 5–10 pages, LaTeX (template will be shared). The report
-   should cover: goals of the project, tasks undertaken, evaluation, and
-   conclusions. The report **must** list the contributions of each group member
-   in terms of percentages.
-3. **Presentation** — 10-minute presentation + Q&A. Only one group member needs
-   to present.
-
-Code and report must be submitted as a single GitHub repository. The report
-must be written in LaTeX, Markdown, or another open, machine-readable format.
-
-### Grading Rubric (out of 16 marks)
-
-| Component | Marks | What we look for |
-|---|---|---|
-| Challenge of the problem undertaken | 3 | Ambition, novelty, relevance to course topics. Each project below has a difficulty rating (★ to ★★★★★). **Higher-difficulty projects receive higher marks in this component even if completion is partial.** |
-| Progress made towards the challenge | 5 | Working implementation, depth of evaluation, evidence of effort |
-| Written report | 5 | Clarity, technical depth, proper evaluation, contribution breakdown |
-| Presentation | 3 | Clear explanation, good use of time, ability to answer questions |
-
-### Important Dates
-
-| Task | Date |
-|---|---|
-| Project topic approval | 30/03/2026 |
-| Report & code submission | 26/04/2026 |
-| Presentation | Week of 27/04/2026 |
-
-Fill in your group members and chosen project topic in the
-[sign-up sheet](https://docs.google.com/spreadsheets/d/1kINa3ipNcyxAqh1wXC9_65xeZg25QFDirSUEqUU3IyA/edit?gid=0#gid=0)
-by the topic approval deadline.
-
----
-
-## Project Ideas
+## Index
 
 1. [MCS and CLH Queue Locks](#project-1-mcs-and-clh-queue-locks)
 2. [Concurrent Linked Lists — From Fine-Grained Locking to Lock-Free](#project-2-concurrent-linked-lists--from-fine-grained-locking-to-lock-free)
@@ -84,17 +41,7 @@ by the topic approval deadline.
 24. [Elimination-Based Concurrent Data Structures Beyond Stacks](#project-24-elimination-based-concurrent-data-structures-beyond-stacks)
 25. [Practical Lock-Free to Wait-Free Transformation](#project-25-practical-lock-free-to-wait-free-transformation)
 26. [Left-Right — A Concurrency Control Alternative to Reader-Writer Locks](#project-26-left-right--a-concurrency-control-alternative-to-reader-writer-locks)
-
-Below are suggested project ideas. You are free to propose your own topic
-(subject to instructor approval). If you are presenting a new project topic,
-make a PR to this file. The ideas below use OCaml 5 as the
-implementation language, but you may adapt them to another language or propose
-an entirely different project. Each idea is described using:
-
-- **Background** — motivation and connection to course topics
-- **Tasks** — concrete implementation, testing, and evaluation steps
-- **Research question** — the central question your project should answer
-- **References** — starting points
+27. [Allocation-Free Semi-Space GC for a C Runtime Using OxCaml Allocation-Free Semantics](#project-27-allocation-free-semi-space-gc-for-a-c-runtime-using-oxcaml-allocation-free-semantics)
 
 ---
 
@@ -1453,3 +1400,54 @@ overhead compared to a reader-writer lock?
 - J. Gjengset, `left-right` — a Rust implementation of Left-Right for high-performance concurrent reads: <https://github.com/jonhoo/left-right>
 - J. Gjengset, "Partial State in Dataflow-Based Materialized Views," PhD thesis, MIT, 2021, §5 "Fast Reads" (p. 75) — applies left-right to double-buffered hash tables for wait-free reads in the Noria database: <https://jon.thesquareplanet.com/papers/phd-thesis.pdf>
 - C. Sherborne, "Making My Concurrent Algorithm 6000% Better," *dev.to*: <https://dev.to/charlietap/making-my-concurrent-algorithm-6000-better-24oo>
+
+---
+
+## Project 27: Allocation-Free Semi-Space GC for a C Runtime Using OxCaml Allocation-Free Semantics
+
+**Difficulty: ★★★★☆** — Implementing a zero-allocation GC requires careful memory management and invariant reasoning; integrating with OxCaml's type system adds complexity.
+
+### Background
+
+Traditional garbage collectors themselves allocate memory during collection (for mark vectors, to-space pointers, etc.), creating a bootstrapping problem: how does the GC allocate memory without triggering itself recursively? This circularity is particularly acute in real-time and embedded systems where allocation predictability is critical. OxCaml (OCaml with Ownership and eXclusive types) is a variant of OCaml 5 that introduces **allocation-free semantics**, a type system that guarantees code marked with `#[alloc_free]` performs no dynamic heap allocation.
+
+This project tackles the challenge of implementing a **fully allocation-free runtime and garbage collector for multithreaded programs** where the managed heap itself is pre-allocated as a fixed-size buffer on the stack (or as static data), and **all code in the runtime operates entirely within zero-allocation constraints**. The runtime must safely handle multiple concurrent threads allocating and executing code without performing any dynamic memory allocation. Rather than allocating GC metadata during collection, all scheduler state, mark bits, copying buffers, and forwarding pointers are housed within this pre-allocated heap region. The reference-tracing algorithm (semi-space copying) must operate as a conservative memory manager that never calls `malloc`/`free` at any point, even under concurrent execution. OxCaml's type system serves as both a proof of correctness and a tool for systematic verification that the entire runtime is truly allocation-free.
+
+A key secondary goal is to demonstrate that a fully stack-allocated, zero-allocation GC can safely support concurrent execution of multiple threads while maintaining correctness and achieving competitive performance compared to traditional allocation-based collectors.
+
+### Tasks
+
+1. Design and implement a **fully stack-allocated heap** for a minimal C runtime: a fixed, pre-allocated buffer that lives as a static global or stack-allocated array. This buffer is partitioned into two semi-spaces ("from-space" and "to-space") and metadata regions for allocation pointers, GC state, and bookkeeping.
+
+2. Implement a **semi-space copying garbage collector in C** that operates entirely within this pre-allocated heap. The collector performs two-phase copying (mark/trace phase, copy phase) without ever calling `malloc`/`free`. All GC state (mark bits, forwarding pointers, todo lists, collection queues) resides in the fixed heap footprint.
+
+3. Ensure the runtime is **thread-safe and allocation-free**: implement proper synchronization (mutexes or atomic operations) for concurrent heap access. Mark the entire runtime (both allocator and **collection phase**) with OxCaml's `#[alloc_free]` attribute. Use the OxCaml type system to verify statically that the allocator and core GC algorithm perform no dynamic memory allocation. Document any unsafe escapes or fallbacks carefully.
+
+4. Implement comprehensive **test suites** demonstrating correctness:
+   - Write OCaml/OxCaml test programs (both single-threaded and concurrent) that allocate objects, create reference cycles, and trigger garbage collection
+   - Use threading primitives to create concurrent threads that simultaneously allocate and trigger collection
+   - Verify that garbage is correctly identified and reclaimed under concurrent execution
+   - Use valgrind or similar memory profiling tools to confirm that no allocations occur in the C runtime and no memory leaks persist
+   - Test allocation failure scenarios (heap exhaustion) and verify graceful handling
+
+5. **Benchmark** the stack-allocated, zero-allocation GC against:
+   - A traditional semi-space collector that allocates GC metadata dynamically
+   - A mark-and-sweep GC with dynamic mark vector allocation
+   - Measure throughput (allocations/collections per unit time), latency, and scalability across varying thread counts (1–8 threads)
+   - Test under concurrent allocation patterns (balanced, allocation-heavy, collection-heavy)
+
+6. Investigate **practical design trade-offs**:
+   - How does the fixed heap buffer size impact the variety and complexity of OCaml programs that can run?
+   - Measure memory utilization and fragmentation during the lifetime of long-running test programs
+   - Evaluate whether the pre-allocated approach is viable for embedded or real-time OCaml applications
+   - Document any heap-size tuning or resizing strategies (e.g., can the buffer be resized at startup but not at runtime)?
+
+### Research Question
+
+Can a fully allocation-free, thread-safe semi-space garbage collector, verified statically using OxCaml's type system, correctly handle concurrent multithreaded programs while achieving competitive throughput and latency compared to traditional allocation-based collectors, and what design trade-offs arise between the fixed heap buffer size and runtime flexibility?
+
+### References
+
+- OxCaml documentation and semantics (particularly the `#[alloc_free]` attribute and its proof obligations): <https://github.com/gasche/oxcaml> or related sources
+- D. A. Moon, "Garbage Collection in Lisp" , foundational work on copying collectors and semi-space designs
+- "The Garbage Collector Handbook: The Art of Automatic Memory Management" by Jones, Hosking, Moss , comprehensive reference on GC algorithms and real-time concerns
