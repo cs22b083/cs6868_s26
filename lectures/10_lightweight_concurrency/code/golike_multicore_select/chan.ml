@@ -77,12 +77,15 @@ let rec find_live_sender_locked senders =
 
 let send ch v =
   Mutex.lock ch.mutex;
-  if find_live_receiver_locked ch.receivers v then
+  if find_live_receiver_locked ch.receivers v then begin
+    (* Case 1: a waiting receiver exists -- hand off directly. *)
     Mutex.unlock ch.mutex
-  else if Queue.length ch.buf < ch.capacity then begin
+  end else if Queue.length ch.buf < ch.capacity then begin
+    (* Case 2: buffer has room -- enqueue and return. *)
     Queue.push v ch.buf;
     Mutex.unlock ch.mutex
   end else begin
+    (* Case 3: buffer full, no receivers -- block until a receiver arrives. *)
     let trigger = Trigger.create () in
     let done_slot = ref None in
     Queue.push (v, done_slot, trigger) ch.senders;
@@ -93,6 +96,8 @@ let send ch v =
 let recv ch =
   Mutex.lock ch.mutex;
   if not (Queue.is_empty ch.buf) then begin
+    (* Case 1: buffer non-empty -- pop head; if a sender is waiting, move
+       its value into the now-free slot to preserve FIFO order. *)
     let v = Queue.pop ch.buf in
     (match find_live_sender_locked ch.senders with
      | Some sv -> Queue.push sv ch.buf
@@ -102,9 +107,11 @@ let recv ch =
   end else begin
     match find_live_sender_locked ch.senders with
     | Some sv ->
+        (* Case 2: unbuffered channel with a waiting sender -- rendezvous. *)
         Mutex.unlock ch.mutex;
         sv
     | None ->
+        (* Case 3: empty buffer, no senders -- block until a sender arrives. *)
         let slot = ref None in
         let trigger = Trigger.create () in
         Queue.push (slot, trigger) ch.receivers;
@@ -117,6 +124,8 @@ let recv ch =
 
 let try_complete_recv_locked ch =
   if not (Queue.is_empty ch.buf) then begin
+    (* Case 1: buffer non-empty -- pop head; promote a waiting sender into
+       the free slot (FIFO). *)
     let v = Queue.pop ch.buf in
     (match find_live_sender_locked ch.senders with
      | Some sv -> Queue.push sv ch.buf
@@ -124,17 +133,26 @@ let try_complete_recv_locked ch =
     Some v
   end else begin
     match find_live_sender_locked ch.senders with
-    | Some sv -> Some sv
-    | None -> None
+    | Some sv ->
+        (* Case 2: unbuffered rendezvous with a waiting sender. *)
+        Some sv
+    | None ->
+        (* Case 3: nothing available -- caller must offer and wait. *)
+        None
   end
 
 let try_complete_send_locked ch v =
-  if find_live_receiver_locked ch.receivers v then true
-  else if Queue.length ch.buf < ch.capacity then begin
+  if find_live_receiver_locked ch.receivers v then begin
+    (* Case 1: a waiting receiver exists -- hand off directly. *)
+    true
+  end else if Queue.length ch.buf < ch.capacity then begin
+    (* Case 2: buffer has room -- enqueue. *)
     Queue.push v ch.buf;
     true
-  end else
+  end else begin
+    (* Case 3: buffer full, no receivers -- caller must offer and wait. *)
     false
+  end
 
 let enqueue_recv_locked ch slot trigger =
   Queue.push (slot, trigger) ch.receivers
