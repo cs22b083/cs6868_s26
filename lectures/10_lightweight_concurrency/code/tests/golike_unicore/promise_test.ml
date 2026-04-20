@@ -43,7 +43,7 @@ let () =
       else
         let a = Promise.async (fun () -> fib (n - 1)) in
         let b = fib (n - 2) in
-        Promise.await a + b
+        (Promise.await a) + b
     in
     for i = 0 to 10 do
       Printf.printf "  fib(%d) = %d\n" i (fib i)

@@ -1,4 +1,4 @@
-(** Async/await built on IVar.
+(* Async/await built on IVar.
 
     {[
       Sched.run (fun () ->

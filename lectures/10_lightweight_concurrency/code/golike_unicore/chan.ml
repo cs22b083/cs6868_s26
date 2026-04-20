@@ -16,7 +16,8 @@ let make capacity =
   if capacity < 0 then invalid_arg "Chan.make: negative capacity";
   { capacity; state = Empty { receivers = Queue.create () } }
 
-let send ch v =
+(* Senders block when added to senders but not to buffer *)
+  let send ch v =
   match ch.state with
   | Empty { receivers } ->
       if not (Queue.is_empty receivers) then begin
