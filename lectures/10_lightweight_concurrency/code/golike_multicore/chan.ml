@@ -16,6 +16,7 @@ let make capacity =
     mutex = Mutex.create ();
   }
 
+  (* note that await is called after unlocking the mutex *)
 let send ch v =
   Mutex.lock ch.mutex;
   if not (Queue.is_empty ch.receivers) then begin
