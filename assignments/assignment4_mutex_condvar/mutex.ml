@@ -20,19 +20,58 @@ type t = {
   waiters : (unit option ref * Trigger.t) Queue.t;
 }
 
-let create () = failwith "Not implemented"
+let create () = {
+  locked = false;
+  waiters = Queue.create ();
+}
 
 (** Pop waiters until one is signaled successfully.  A failed signal
     means the waiter was already woken by another case of its
     [Select.select], so we simply try the next one.  Returns [true] if
     a live waiter was found (in which case the lock has been handed
     off), [false] if the queue was drained. *)
-let rec find_live_waiter _waiters = failwith "Not implemented"
+let rec find_live_waiter waiters =
+  if Queue.is_empty waiters then false
+  else
+    let (slot, trigger) = Queue.pop waiters in
+    slot := Some (); (* write the flag to signal that the lock was granted. *)
+    if Trigger.signal trigger then true
+    else find_live_waiter waiters
 
-let lock _m = failwith "Not implemented"
+let lock m =
+  if not m.locked then
+    m.locked <- true
+  else begin
+    let slot = ref None in
+    let trigger = Trigger.create () in
+    Queue.push (slot, trigger) m.waiters;
+    Trigger.await trigger;
+    (* check that slot of lock is changed to some() *)
+    ignore (Option.get !slot)
+  end
 
-let try_lock _m = failwith "Not implemented"
+let try_lock m =
+  if m.locked then false
+  else begin
+    m.locked <- true;
+    true
+  end
 
-let unlock _m = failwith "Not implemented"
+let unlock m =
+  if not m.locked then
+    failwith "Mutex.unlock: already unlocked mutex"
+  else if not (find_live_waiter m.waiters) then
+    m.locked <- false
 
-let lock_evt _m = failwith "Not implemented"
+let lock_evt m =
+  Select.Evt {
+    try_complete = (fun () ->
+      if m.locked then None
+      else begin
+        m.locked <- true;
+        Some ()
+      end);
+    offer = (fun slot trigger ->
+      Queue.push (slot, trigger) m.waiters);
+    wrap = Fun.id;
+  }
