@@ -1,0 +1,4 @@
+(executables
+ (names gensym_atomics)
+ (libraries parallel parallel.scheduler)
+ (ocamlopt_flags (:standard -extension-universe alpha)))

@@ -1,0 +1,3 @@
+(executables
+ (names stack_alloc local_regions)
+ (ocamlopt_flags (:standard -extension-universe alpha)))

@@ -1,0 +1,4 @@
+(executables
+ (names unboxed_demo)
+ (libraries unboxed.float_u unboxed.int32_u unboxed.int64_u)
+ (ocamlopt_flags (:standard -extension-universe alpha)))

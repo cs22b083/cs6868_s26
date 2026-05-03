@@ -1,0 +1,4 @@
+(executables
+ (names capsules_demo)
+ (libraries parallel parallel.scheduler await await.blocking await.capsule capsule)
+ (ocamlopt_flags (:standard -extension-universe alpha)))
