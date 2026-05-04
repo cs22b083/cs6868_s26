@@ -9,6 +9,7 @@
 (library
  (name part1_polyline)
  (modules part1_polyline)
+ (libraries unboxed.float_u)
  (flags (:standard -w -32))
  (ocamlopt_flags (:standard -extension-universe alpha -O3)))
 

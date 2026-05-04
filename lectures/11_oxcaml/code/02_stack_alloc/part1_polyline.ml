@@ -65,3 +65,22 @@ let[@zero_alloc] [@inline never] rec translate_polyline
   | [] -> exclave_ []
   | p :: rest ->
       exclave_ (translate p dx dy :: translate_polyline rest dx dy)
+
+(* Part 6 preview: the same path_length using float# (unboxed float)
+   passes [@zero_alloc] verification at -O3. We don't explain float#
+   here — just observe that the boxed-float allocation goes away when
+   the floats live in registers instead of on the heap. *)
+
+let[@zero_alloc] [@inline never] distance_u
+    (a @ local) (b @ local) : float# =
+  let open Float_u in
+  let dx = of_float a.x - of_float b.x in
+  let dy = of_float a.y - of_float b.y in
+  sqrt (dx * dx + dy * dy)
+
+let[@zero_alloc] [@inline never] rec path_length_u
+    (poly : point list @ local) (acc : float#) : float# =
+  let open Float_u in
+  match poly with
+  | a :: (b :: _ as rest) -> path_length_u rest (acc + distance_u a b)
+  | _ -> acc

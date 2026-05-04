@@ -416,12 +416,35 @@ Error: Annotation check for zero_alloc failed on path_length.
 Error: allocation of 16 bytes for float
 ```
 
-The fix isn't more locality — it's *unboxed* numbers. Part 6's
-`float#` (an unboxed 64-bit float that lives in a register) makes
-this style of computation genuinely zero-allocation. The two
-verified files in `code/02_stack_alloc/` are
-`part1_polyline.ml` (passes — `translate_polyline` is zero-alloc)
-and `part1_path_length_alloc_fail.ml` (fails by design).
+The fix isn't more locality — it's *unboxed* numbers. As a teaser
+for Part 6 (don't worry about the syntax yet), the same algorithm
+written with `float#` (an unboxed 64-bit float that lives in a
+register) passes `[@zero_alloc]` at `-O3`:
+
+```ocaml skip
+let[@zero_alloc] [@inline never] distance_u
+    (a @ local) (b @ local) : float# =
+  let open Float_u in
+  let dx = of_float a.x - of_float b.x in
+  let dy = of_float a.y - of_float b.y in
+  sqrt (dx * dx + dy * dy)
+
+let[@zero_alloc] [@inline never] rec path_length_u
+    (poly : point list @ local) (acc : float#) : float# =
+  let open Float_u in
+  match poly with
+  | a :: (b :: _ as rest) -> path_length_u rest (acc + distance_u a b)
+  | _ -> acc
+```
+
+Same shape, no boxes — `float#` lives in a register and crosses
+locality freely. We'll cover `float#` properly in Part 6.
+
+The verified files in `code/02_stack_alloc/` are
+`part1_polyline.ml` (passes — `translate_polyline` and the `float#`
+version of `path_length_u`) and
+`part1_path_length_alloc_fail.ml` (fails by design — boxed-float
+`path_length`).
 
 > **Hands-on**:
 > [`act04_local_lists`](https://github.com/oxcaml/tutorial-icfp25/tree/main/handson_activity/act04_local_lists)
