@@ -6,9 +6,8 @@
 let use_locally (r @ local) = !r + 1
 
 let _test_use_locally () =
-  let r = stack_ (ref 41) in
-  let n = use_locally r in
-  n
+  let r = ref 41 in
+  use_locally r
 
 (* Stack allocation with stack_. *)
 

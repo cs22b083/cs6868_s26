@@ -182,23 +182,28 @@ val use_locally : int ref @ local -> int = <fun>
 ```
 
 Read the signature: the function takes an `int ref @ local` — a `ref`
-that the caller has promised not to let escape — and returns a plain
-`int`. The body just dereferences and adds. We could pass it a
-stack-allocated ref:
+the caller can pass at any locality, *and the function promises not
+to let it escape*. The body just dereferences and adds. We can hand
+it an ordinary heap-allocated ref:
 
 ```ocaml
 # let test () =
-    let r = stack_ (ref 41) in
-    let n = use_locally r in
-    n;;
+    let r = ref 41 in
+    use_locally r;;
 val test : unit -> int = <fun>
 # test ();;
 - : int = 42
 ```
 
-The `int` result mode-crosses out — `int` is immediate and doesn't need
-heap allocation, so the answer can flow back to global code freely.
-We'll come back to that when we discuss **mode crossing**.
+The annotation is the *function's* contract, not the caller's. A
+`global` ref satisfies the `local` parameter (every global value can
+be used where a local is expected). The function in turn pinky-swears
+not to capture or return it.
+
+The `int` result mode-crosses out — `int` is immediate, so the answer
+can flow back to global code freely. We'll come back to that when we
+discuss **mode crossing**, and we'll see `stack_` allocation in the
+next subsection.
 
 ### Stack Allocation with `stack_`
 
