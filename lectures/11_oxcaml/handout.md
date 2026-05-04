@@ -95,8 +95,26 @@ Our standard runtime fix is `Atomic.fetch_and_add`:
 val gensym_atomic : string -> string = <fun>
 ```
 
-`Atomic.t` mode-crosses contention, so `gensym_atomic` *is* portable
-and `Domain.Safe.spawn` accepts it.
+The runtime race is gone — atomic increments serialise correctly. But
+watch what the type checker says:
+
+```ocaml
+# let _ = Domain.Safe.spawn (fun () -> gensym_atomic "x");;
+Line 1, characters 38-51:
+Error: The value gensym_atomic is nonportable but is expected to be portable
+       because it is used inside the function at Line 1, characters 27-56
+       which is expected to be portable.
+```
+
+Same error! `Atomic.t` mode-crosses **contention** — multiple domains
+can hammer on it simultaneously without racing — but it does *not*
+mode-cross **portability**. The closure still captures a top-level
+mutable reference, and top-level state is `nonportable`. Atomics fix
+the race; they don't make the *function* shippable to another domain.
+
+The proper fix is a **capsule** — a structural way to bundle mutable
+state with its access protocol so the whole package is portable. We
+get there in Part 5.
 
 This works because the operation fits in one atomic word. But what about
 the data structures from Lectures 07–08 — linked lists, hash tables,
