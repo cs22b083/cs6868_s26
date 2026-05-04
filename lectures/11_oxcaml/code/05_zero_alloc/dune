@@ -1,0 +1,4 @@
+(executables
+ (names zero_alloc_demo)
+ (libraries unboxed.float_u)
+ (ocamlopt_flags (:standard -extension-universe alpha -O3 -w -199)))
