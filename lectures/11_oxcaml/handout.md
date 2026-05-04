@@ -474,17 +474,21 @@ two new modal axes: **contention** and **portability**. Together they
 give the compiler enough information to reject the unsafe parallel
 `gensym` we wrote in the introduction.
 
-### What Are Modes?
+### Two More Axes: Contention and Portability
 
-Modes describe *how* a value can be used. They are orthogonal to types.
-A value of type `thing` might be:
-- `thing @ uncontended` — only one domain can access it
-- `thing @ contended` — it might be accessed by multiple domains
-- `thing @ shared` — multiple domains can read it simultaneously
+Part 1 used the **locality** axis. For data-race freedom we need two
+more:
 
-The key insight: **the same type can appear at different modes in different
-contexts**. A `thing` starts as `uncontended` when it's local to one
-domain, but becomes `contended` when it's captured in a parallel closure.
+- **contention** — `uncontended` / `contended` / `shared`: tracks
+  whether multiple domains can simultaneously access a value.
+- **portability** — `portable` / `nonportable`: tracks whether a
+  value can safely *cross* a domain boundary.
+
+A new wrinkle compared to Part 1: **the same value can appear at
+different modes in different contexts**. A `thing` is `uncontended`
+while it's local to one domain, then becomes `contended` the moment
+it's captured in a parallel closure. The compiler tracks this
+transition.
 
 ### The Contention Axis: `uncontended` vs `contended`
 
