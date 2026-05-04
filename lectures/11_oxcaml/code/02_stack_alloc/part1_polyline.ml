@@ -3,7 +3,12 @@
 
 (* Locality: local vs global. *)
 
-let use_locally (x @ local) = x + 1
+let use_locally (r @ local) = !r + 1
+
+let _test_use_locally () =
+  let r = stack_ (ref 41) in
+  let n = use_locally r in
+  n
 
 (* Stack allocation with stack_. *)
 

@@ -173,20 +173,32 @@ live on the stack.
 OxCaml introduces a **locality** mode. Every value is either `local`
 (does not escape its scope) or `global` (may live indefinitely on the
 heap). The `@ local` annotation on a parameter is a promise from the
-caller that the value won't be captured or returned. Here's the
-smallest possible example, before we get to points:
+caller that the value won't be captured or returned. Here's a minimal
+example using a `ref` (a heap allocation in standard OCaml):
 
 ```ocaml
-# let use_locally (x @ local) = x + 1;;
-val use_locally : int @ local -> int = <fun>
-# use_locally 42;;
-- : int = 43
+# let use_locally (r @ local) = !r + 1;;
+val use_locally : int ref @ local -> int = <fun>
 ```
 
-The return type is `int` (global by default) — the function takes a
-local value and produces a global result. This is fine because `int` is
-immediate and doesn't require heap allocation. We'll come back to that
-when we discuss **mode crossing**.
+Read the signature: the function takes an `int ref @ local` — a `ref`
+that the caller has promised not to let escape — and returns a plain
+`int`. The body just dereferences and adds. We could pass it a
+stack-allocated ref:
+
+```ocaml
+# let test () =
+    let r = stack_ (ref 41) in
+    let n = use_locally r in
+    n;;
+val test : unit -> int = <fun>
+# test ();;
+- : int = 42
+```
+
+The `int` result mode-crosses out — `int` is immediate and doesn't need
+heap allocation, so the answer can flow back to global code freely.
+We'll come back to that when we discuss **mode crossing**.
 
 ### Stack Allocation with `stack_`
 
