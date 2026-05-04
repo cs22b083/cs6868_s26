@@ -3,7 +3,14 @@
  (modules stack_alloc local_regions)
  (ocamlopt_flags (:standard -extension-universe alpha)))
 
-; part1_polyline.ml compiles clean; the two part1_escape_*.ml files
-; are intentionally rejected by the type checker (used to demo the
-; escape errors in Part 1 of the lecture). All three are slide source
-; only and are excluded from the build via (modules) above.
+; Build part1_polyline as a library at -O3 so [@zero_alloc] annotations
+; are actually verified. The library has no users; -w -32 silences the
+; unused-value warning on the demo functions.
+(library
+ (name part1_polyline)
+ (modules part1_polyline)
+ (flags (:standard -w -32))
+ (ocamlopt_flags (:standard -extension-universe alpha -O3)))
+
+; The other part1_*.ml files are intentionally rejected by the type
+; checker (slide source only) and are excluded from the build.

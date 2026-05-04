@@ -44,15 +44,23 @@ let test_perimeter () =
   let p = triangle_perimeter a b c in
   p
 
-(* Local lists: traversal (no allocation) and map-style construction. *)
+(* Local lists: traversal and map-style construction.
+
+   path_length is NOT zero-alloc: each [distance a b] returns a boxed
+   float (16 bytes), and [+.] allocates another box for the running sum.
+   See part1_path_length_alloc_fail.ml for the [@zero_alloc] failure.
+   Part 6 fixes this with unboxed floats (float#). *)
 
 let rec path_length (poly : point list @ local) : float =
   match poly with
   | a :: (b :: _ as rest) -> distance a b +. path_length rest
   | _ -> 0.0
 
-let rec translate_polyline (poly : point list @ local) dx dy
-    : point list @ local =
+(* translate_polyline IS zero-alloc: every cons and every translated
+   point lives in the caller's local region (exclave_), no heap traffic. *)
+
+let[@zero_alloc] [@inline never] rec translate_polyline
+    (poly : point list @ local) dx dy : point list @ local =
   match poly with
   | [] -> exclave_ []
   | p :: rest ->

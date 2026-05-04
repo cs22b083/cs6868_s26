@@ -364,19 +364,7 @@ allocation, and the `float` answer escapes to global scope.
 A polyline of arbitrary length is naturally a `point list`. The
 `@ local` annotation extends through structures: a `point list @ local`
 is a list whose cons cells *and* whose points all live in the current
-region. We can compute path length of an arbitrary polyline with no
-heap traffic at all:
-
-```ocaml
-# let rec path_length (poly : point list @ local) : float =
-    match poly with
-    | a :: (b :: _ as rest) -> distance a b +. path_length rest
-    | _ -> 0.0;;
-val path_length : point list @ local -> float = <fun>
-```
-
-The traversal allocates nothing — `rest` is just a local pointer into
-the existing list, and `distance` returns a mode-crossing `float`.
+region.
 
 For operations that *build* a new local list — say, translating every
 point of a polyline by some offset — every cons must be allocated in
@@ -397,6 +385,43 @@ Notice the recursion sits *inside* the `exclave_`: each cons cell —
 including the one built from the recursive result — is allocated in
 the caller's region. This is exactly the shape of the zero-allocation
 merge sort we'll see in Part 6.
+
+We can hold the compiler to the no-allocation claim with the
+`[@zero_alloc]` attribute (Part 6 uses it heavily). Tagged on
+`translate_polyline`, it passes verification at `-O3`:
+
+```ocaml skip
+let[@zero_alloc] [@inline never] rec translate_polyline
+    (poly : point list @ local) dx dy : point list @ local =
+  ...
+```
+
+A traversal-style function, however, exposes a real limitation:
+
+```ocaml
+# let rec path_length (poly : point list @ local) : float =
+    match poly with
+    | a :: (b :: _ as rest) -> distance a b +. path_length rest
+    | _ -> 0.0;;
+val path_length : point list @ local -> float = <fun>
+```
+
+Here `rest` is just a local pointer into the existing list — but
+each `distance a b` returns a *boxed* `float`, allocating 16 bytes on
+the heap, and `+.` allocates another. Tagging `path_length` with
+`[@zero_alloc]` and compiling at `-O3` produces:
+
+```text
+Error: Annotation check for zero_alloc failed on path_length.
+Error: allocation of 16 bytes for float
+```
+
+The fix isn't more locality — it's *unboxed* numbers. Part 6's
+`float#` (an unboxed 64-bit float that lives in a register) makes
+this style of computation genuinely zero-allocation. The two
+verified files in `code/02_stack_alloc/` are
+`part1_polyline.ml` (passes — `translate_polyline` is zero-alloc)
+and `part1_path_length_alloc_fail.ml` (fails by design).
 
 > **Hands-on**:
 > [`act04_local_lists`](https://github.com/oxcaml/tutorial-icfp25/tree/main/handson_activity/act04_local_lists)
