@@ -645,6 +645,45 @@ This distinction is crucial for understanding `fork_join2`: the closures
 you pass are `portable`, but the `par` parameter they receive is not
 captured — it's passed in fresh.
 
+### Putting It Together: A First Working Parallel Program
+
+Enough rejections. Here is a complete program that the type checker
+*accepts*: two domains incrementing a shared counter 1000 times each,
+then joining and reading the result. The trick we already saw with
+`gensym_atomic_portable.ml` — defining the state inside a function so
+its captures are portable — is enough to satisfy `Domain.Safe.spawn`:
+
+```ocaml
+# let parallel_counter () =
+    let count = Atomic.make 0 in
+    let bump_n n =
+      for _ = 1 to n do
+        ignore (Atomic.fetch_and_add count 1)
+      done
+    in
+    let d = Domain.Safe.spawn (fun () -> bump_n 1000) in
+    bump_n 1000;
+    Domain.join d;
+    Atomic.get count;;
+val parallel_counter : unit -> int = <fun>
+# parallel_counter ();;
+- : int = 2000
+```
+
+Two domains, a shared `Atomic.t` counter, no race — and the compiler
+verified all of that before we ran it. The body of the spawned closure
+is `portable`; its captures (`count`, `bump_n`) are at modes that
+satisfy the portability check; `Atomic.t` mode-crosses contention so
+both domains can hammer on it.
+
+This is the smallest interesting parallel program we can write. For
+real workloads we want **structured** parallelism — divide and
+conquer, parallel sorts, parallel maps — without manually managing
+domains. **Part 4** introduces `Parallel.fork_join2`, which makes that
+ergonomic. And for **shared mutable state more complex than an
+atomic** (hash tables, linked lists, monitor-protected resources),
+**Part 5** introduces capsules.
+
 ## Part 3: Uniqueness and Linearity
 
 The mode system has two more axes that address a different class of bugs:
