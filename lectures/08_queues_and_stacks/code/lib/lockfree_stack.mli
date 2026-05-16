@@ -10,7 +10,7 @@
     successor.
 
     Both methods use exponential backoff to reduce contention on the
-    top pointer.
+    top pointer. 
 
     This stack is lock-free: a method call completes in a finite
     number of steps regardless of what other threads do. *)
